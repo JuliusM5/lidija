@@ -28,32 +28,71 @@ function showPage(pageId) {
     }
 }
 
-// Function to create a colored placeholder div instead of using external placeholder images
-function createPlaceholderElement(width, height, bgColor, textColor, text) {
+// Function to create a styled placeholder that matches the website design
+// Function to create a styled placeholder that matches the website design
+function createPlaceholderElement(width, height, text, isRound = false) {
     // Create a div element instead of using an external image
     const placeholder = document.createElement('div');
     placeholder.className = 'local-placeholder';
+    
+    // Set dimensions
     placeholder.style.width = width + 'px';
     placeholder.style.height = height + 'px';
-    placeholder.style.backgroundColor = bgColor || '#f8f5f1';
-    placeholder.style.color = textColor || '#7f4937';
+    
+    // Set border radius if round
+    if (isRound) {
+        placeholder.style.borderRadius = '50%';
+    }
+    
+    // Base styling to match the website
+    placeholder.style.backgroundColor = '#f8f5f1';
     placeholder.style.display = 'flex';
     placeholder.style.alignItems = 'center';
     placeholder.style.justifyContent = 'center';
     placeholder.style.textAlign = 'center';
     placeholder.style.padding = '10px';
     placeholder.style.boxSizing = 'border-box';
-    placeholder.style.fontFamily = 'Arial, sans-serif';
+    placeholder.style.fontFamily = '"Source Sans Pro", sans-serif';
     placeholder.style.overflow = 'hidden';
-    placeholder.style.fontSize = '14px';
+    placeholder.style.fontSize = '12px';
     placeholder.style.wordBreak = 'break-word';
+    placeholder.style.color = '#7f4937';
+    placeholder.style.border = '1px solid #e6ddd6';
     
-    // Add text to the placeholder
-    placeholder.textContent = text || 'Placeholder';
+    // Create an inner span for the text to have better styling control
+    const textSpan = document.createElement('span');
+    
+    // Format the text to look like a HEX code
+    textSpan.textContent = '#f8f5f1';
+    textSpan.style.opacity = '0.7';
+    textSpan.style.fontSize = width < 150 ? '10px' : '12px';
+    
+    placeholder.appendChild(textSpan);
     
     return placeholder;
 }
 
+// When creating category items, use this function for placeholders
+// For example, in the loadCategory function:
+/*
+const placeholder = createPlaceholderElement(500, 500, '#f8f5f1');
+placeholder.style.width = '100%';
+placeholder.style.aspectRatio = '1/1';
+cardImageContainer.appendChild(placeholder);
+*/
+
+// When dynamically creating popular post items, use this:
+/*
+const placeholder = createPlaceholderElement(60, 60, '#f8f5f1', true);
+placeholder.className += ' popular-post-img';
+*/
+
+// When creating latest post items, use this:
+/*
+const placeholder = createPlaceholderElement(200, 200, '#f8f5f1');
+placeholder.style.width = '100%';
+placeholder.style.height = '100%';
+*/
 // Function to handle category loading
 function loadCategory(categoryName) {
     console.log(`Loading category: ${categoryName}`);
@@ -175,7 +214,9 @@ function loadCategory(categoryName) {
             cardImageContainer.className = 'recipe-card-image';
             
             // Create placeholder instead of using external image service
-            const placeholder = createPlaceholderElement(500, 500, '#f8f5f1', '#7f4937', recipeTitle);
+            const placeholder = createPlaceholderElement(500, 500, recipeTitle);
+            placeholder.style.width = '100%';
+            placeholder.style.aspectRatio = '1/1';
             cardImageContainer.appendChild(placeholder);
             
             const cardTitle = document.createElement('div');
@@ -246,17 +287,24 @@ function loadRecipePage() {
         .then(html => {
             contentMain.innerHTML = html;
             
-            // Replace any external placeholder images with local placeholders
-            const images = contentMain.querySelectorAll('img[src^="https://via.placeholder.com/"]');
+            // Replace any existing placeholder images with local placeholders
+            const images = contentMain.querySelectorAll('img');
             images.forEach(img => {
-                const dimensions = img.src.match(/\/(\d+)x(\d+)/);
-                if (dimensions && dimensions.length === 3) {
-                    const width = dimensions[1];
-                    const height = dimensions[2];
-                    const altText = img.alt || 'Recipe Image';
-                    
-                    const placeholder = createPlaceholderElement(width, height, '#f8f5f1', '#7f4937', altText);
-                    img.parentNode.replaceChild(placeholder, img);
+                const src = img.getAttribute('src');
+                if (src && src.includes('placeholder.com')) {
+                    const dimensions = src.match(/\/(\d+)x(\d+)/);
+                    if (dimensions && dimensions.length === 3) {
+                        const width = dimensions[1];
+                        const height = dimensions[2];
+                        const altText = img.alt || 'Recipe Image';
+                        
+                        const placeholder = createPlaceholderElement(width, height, altText);
+                        placeholder.style.width = '100%';
+                        
+                        if (img.parentNode) {
+                            img.parentNode.replaceChild(placeholder, img);
+                        }
+                    }
                 }
             });
             
@@ -293,7 +341,7 @@ function loadRecipePage() {
                     </div>
                     
                     <div class="recipe-image">
-                        ${createPlaceholderElement(800, 500, '#f8f5f1', '#7f4937', 'Šaltibarščiai').outerHTML}
+                        ${createPlaceholderElement(800, 500, 'Šaltibarščiai').outerHTML}
                     </div>
                     
                     <p class="recipe-intro">Ką tik prasidėjus šiltajam sezonui, lietuviškoje virtuvėje atsiranda vienas ryškiausių patiekalų – šaltibarščiai. Ši šalta, ryškiai rožinė sriuba yra tapusi Lietuvos vasaros simboliu ir mano vaikystės atsiminimų dalimi.</p>
@@ -418,6 +466,42 @@ function createCategoryPage() {
 
 // Execute on page load
 document.addEventListener('DOMContentLoaded', function() {
+    // Ensure the placeholder styles are added
+    const style = document.createElement('style');
+    style.textContent = `
+        .local-placeholder {
+            max-width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 10px;
+            box-sizing: border-box;
+            font-family: 'Playfair Display', serif;
+            overflow: hidden;
+            word-break: break-word;
+            background-color: #f8f5f1;
+            color: #7f4937;
+            border: 1px solid #e6ddd6;
+            border-radius: 0;
+            font-weight: normal;
+            line-height: 1.3;
+        }
+        
+        .local-placeholder span {
+            font-family: 'Playfair Display', serif;
+            text-transform: uppercase;
+            font-weight: normal;
+            color: #7f4937;
+        }
+        
+        .recipe-card-image .local-placeholder {
+            width: 100% !important;
+            aspect-ratio: 1/1;
+        }
+    `;
+    document.head.appendChild(style);
+    
     // Initialize event listeners for navigation links
     const navLinks = document.querySelectorAll('nav a, .dropdown-content a');
     navLinks.forEach(link => {
