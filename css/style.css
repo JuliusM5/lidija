@@ -92,7 +92,24 @@ nav ul li a:hover {
     border-bottom: 1px solid #aa5f44;
 }
 
+/* Language Toggle */
+.language-toggle {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+}
 
+.language-toggle a {
+    margin-left: 0.5rem;
+    font-size: 0.8rem;
+    color: #7a7a7a;
+}
+
+.language-toggle a.active {
+    font-weight: bold;
+    color: #7f4937;
+}
 
 /* Dropdown styles */
 .dropdown {

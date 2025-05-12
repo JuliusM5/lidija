@@ -6,6 +6,12 @@
 function showPage(pageId) {
     console.log(`Showing page: ${pageId}`);
     
+    // Handle "about-page" specially, since it's in a different file
+    if (pageId === 'about-page') {
+        window.location.href = 'about.html';
+        return;
+    }
+    
     // Hide all pages
     const pages = document.querySelectorAll('.page');
     pages.forEach(page => {
@@ -23,68 +29,215 @@ function showPage(pageId) {
         if (pageId === 'recipe-page') {
             loadRecipePage();
         }
+        
+        // If showing category page, prepare the structure
+        if (pageId === 'category-page') {
+            prepareCategoryPage();
+        }
+        
+        // Close any open dropdowns
+        closeAllDropdowns();
     } else {
         console.error(`Page with ID '${pageId}' not found`);
     }
 }
 
-// Function to create a styled placeholder that matches the website design
-function createPlaceholderElement(width, height, text, isRound = false) {
-    // Create a div element instead of using an external image
-    const placeholder = document.createElement('div');
-    placeholder.className = 'local-placeholder';
+// Function to close all dropdown menus
+function closeAllDropdowns() {
+    const dropdownContents = document.querySelectorAll('.dropdown-content');
+    dropdownContents.forEach(dropdown => {
+        dropdown.style.display = 'none';
+    });
+}
+
+// Function to prepare the category page structure
+function prepareCategoryPage() {
+    let categoryPage = document.getElementById('category-page');
     
-    // Set dimensions
-    placeholder.style.width = width + 'px';
-    placeholder.style.height = height + 'px';
-    
-    // Set border radius if round
-    if (isRound) {
-        placeholder.style.borderRadius = '50%';
+    // If category page doesn't exist, create it
+    if (!categoryPage) {
+        categoryPage = document.createElement('div');
+        categoryPage.id = 'category-page';
+        categoryPage.className = 'page';
+        document.body.appendChild(categoryPage);
     }
     
-    // Base styling to match the website
-    placeholder.style.backgroundColor = '#f8f5f1';
-    placeholder.style.display = 'flex';
-    placeholder.style.alignItems = 'center';
-    placeholder.style.justifyContent = 'center';
-    placeholder.style.textAlign = 'center';
-    placeholder.style.padding = '10px';
-    placeholder.style.boxSizing = 'border-box';
-    placeholder.style.fontFamily = '"Source Sans Pro", sans-serif';
-    placeholder.style.overflow = 'hidden';
-    placeholder.style.wordBreak = 'break-word';
-    placeholder.style.color = '#7f4937';
-    placeholder.style.border = '1px solid #e6ddd6';
+    // If the page doesn't have the right structure, set it up
+    if (!categoryPage.querySelector('.content-main')) {
+        console.log('Setting up category page structure');
+        
+        // Copy header and footer from home page
+        const homePage = document.getElementById('home-page');
+        if (!homePage) {
+            console.error('Home page not found');
+            return;
+        }
+        
+        // Create main content structure
+        const header = homePage.querySelector('header').cloneNode(true);
+        const footer = homePage.querySelector('footer').cloneNode(true);
+        
+        const mainContent = document.createElement('div');
+        mainContent.className = 'container main-content';
+        
+        // Add content main
+        const contentMain = document.createElement('div');
+        contentMain.className = 'content-main';
+        contentMain.innerHTML = `
+            <div class="category-header">
+                <h1 class="category-title"></h1>
+                <p class="category-description"></p>
+            </div>
+            <div class="recipe-grid">
+                <!-- Recipe cards will be loaded here -->
+            </div>
+            <div class="load-more-container">
+                <a href="#" class="load-more-button">DAUGIAU RECEPTŲ</a>
+            </div>
+        `;
+        
+        // Add sidebar clone from home page
+        const sidebar = homePage.querySelector('.sidebar').cloneNode(true);
+        
+        // Assemble the page
+        mainContent.appendChild(contentMain);
+        mainContent.appendChild(sidebar);
+        
+        // Clear the page and add our structure
+        categoryPage.innerHTML = '';
+        categoryPage.appendChild(header);
+        categoryPage.appendChild(mainContent);
+        categoryPage.appendChild(footer);
+        
+        // Set up the dropdown menu behavior for the newly created page
+        setupDropdownMenus(categoryPage);
+        setupNavigationHandlers(categoryPage);
+        
+        console.log('Category page structure prepared successfully');
+    }
+}
+
+// Function to set up dropdown menu behavior
+function setupDropdownMenus(container) {
+    const dropdowns = container.querySelectorAll('.dropdown');
     
-    // Create an inner span for the text to have better styling control
-    const textSpan = document.createElement('span');
-    
-    // Format the text to look like a HEX code
-    textSpan.textContent = text || '#f8f5f1';
-    textSpan.style.opacity = '0.7';
-    textSpan.style.fontSize = width < 150 ? '10px' : '12px';
-    
-    placeholder.appendChild(textSpan);
-    
-    return placeholder;
+    dropdowns.forEach(dropdown => {
+        const link = dropdown.querySelector('a');
+        const content = dropdown.querySelector('.dropdown-content');
+        
+        if (!link || !content) return;
+        
+        // Variable to track if we should keep the menu open
+        let shouldKeepOpen = false;
+        
+        // Add mouseenter event to show dropdown
+        dropdown.addEventListener('mouseenter', () => {
+            clearTimeout(dropdown.timeout);
+            content.style.display = 'block';
+        });
+        
+        // Add mouseleave event to hide dropdown (with a small delay)
+        dropdown.addEventListener('mouseleave', () => {
+            dropdown.timeout = setTimeout(() => {
+                if (!shouldKeepOpen) {
+                    content.style.display = 'none';
+                }
+            }, 100);
+        });
+        
+        // Special handling for the dropdown content
+        content.addEventListener('mouseenter', () => {
+            shouldKeepOpen = true;
+            clearTimeout(dropdown.timeout);
+        });
+        
+        content.addEventListener('mouseleave', () => {
+            shouldKeepOpen = false;
+            content.style.display = 'none';
+        });
+        
+        // Handle click on parent link
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Toggle the display
+            if (content.style.display === 'block') {
+                content.style.display = 'none';
+            } else {
+                closeAllDropdowns(); // Close any other open dropdowns
+                content.style.display = 'block';
+            }
+        });
+        
+        // Handle direct clicks on category links in the dropdown
+        const categoryLinks = content.querySelectorAll('a');
+        categoryLinks.forEach(catLink => {
+            catLink.addEventListener('click', () => {
+                // Close the dropdown after a category is selected
+                setTimeout(() => {
+                    content.style.display = 'none';
+                }, 50);
+            });
+        });
+    });
 }
 
 // Function to handle category loading
 function loadCategory(categoryName) {
     console.log(`Loading category: ${categoryName}`);
     
-    // Create or get category page
-    let categoryPage = document.getElementById('category-page');
-    if (!categoryPage) {
-        categoryPage = createCategoryPage();
+    // Check if we're on the about page
+    if (window.location.pathname.includes('about.html')) {
+        // Redirect to index.html with the category parameter
+        window.location.href = `index.html?category=${encodeURIComponent(categoryName)}`;
+        return;
     }
     
-    // Update category page content
+    // First make sure we're on the category page
+    const categoryPage = document.getElementById('category-page');
+    if (!categoryPage) {
+        // Create the category page if it doesn't exist
+        createCategoryPage();
+        // Try again after creation
+        loadCategory(categoryName);
+        return;
+    }
+    
+    // Show the category page
+    showPage('category-page');
+    
+    // Now make sure the page has the right structure
+    if (!categoryPage.querySelector('.content-main')) {
+        prepareCategoryPage();
+    }
+    
+    // Close any open dropdown menus
+    closeAllDropdowns();
+    
+    // Find the content-main container
+    const contentMain = categoryPage.querySelector('.content-main');
+    if (!contentMain) {
+        console.error('Content main not found in category page');
+        return;
+    }
+    
+    // Update the category page content
     updateCategoryPageContent(categoryPage, categoryName);
     
     // Make sure any placeholders are properly loaded
     replacePlaceholders();
+}
+
+// Function to create a category page
+function createCategoryPage() {
+    console.log('Creating category page');
+    
+    const categoryPage = document.createElement('div');
+    categoryPage.id = 'category-page';
+    categoryPage.className = 'page';
+    document.body.appendChild(categoryPage);
+    
+    return categoryPage;
 }
 
 // Function to update category page content
@@ -109,12 +262,18 @@ function updateCategoryPageContent(categoryPage, categoryName) {
         'Vasara': 'Vasaros skoniai ir kvapai jūsų virtuvėje.',
     };
     
-    // Get or create header element
-    let categoryHeader = categoryPage.querySelector('.category-header');
+    // Get content-main container
+    const contentMain = categoryPage.querySelector('.content-main');
+    if (!contentMain) {
+        console.error('Content main not found in category page');
+        return;
+    }
+    
+    // Get or create category header
+    let categoryHeader = contentMain.querySelector('.category-header');
     if (!categoryHeader) {
         categoryHeader = document.createElement('div');
         categoryHeader.className = 'category-header';
-        const contentMain = categoryPage.querySelector('.content-main') || categoryPage;
         contentMain.prepend(categoryHeader);
     }
     
@@ -123,13 +282,6 @@ function updateCategoryPageContent(categoryPage, categoryName) {
         <h1 class="category-title">${categoryName}</h1>
         <p class="category-description">${descriptions[categoryName] || `Atraskite mūsų receptų kolekciją kategorijoje "${categoryName}".`}</p>
     `;
-    
-    // Get content-main container
-    const contentMain = categoryPage.querySelector('.content-main');
-    if (!contentMain) {
-        console.error('Content main not found in category page');
-        return;
-    }
     
     // Get or create recipe grid
     let recipeGrid = contentMain.querySelector('.recipe-grid');
@@ -404,6 +556,48 @@ function updateCategoryPageContent(categoryPage, categoryName) {
     }
 }
 
+// Function to create a styled placeholder that matches the website design
+function createPlaceholderElement(width, height, text, isRound = false) {
+    // Create a div element instead of using an external image
+    const placeholder = document.createElement('div');
+    placeholder.className = 'local-placeholder';
+    
+    // Set dimensions
+    placeholder.style.width = width + 'px';
+    placeholder.style.height = height + 'px';
+    
+    // Set border radius if round
+    if (isRound) {
+        placeholder.style.borderRadius = '50%';
+    }
+    
+    // Base styling to match the website
+    placeholder.style.backgroundColor = '#f8f5f1';
+    placeholder.style.display = 'flex';
+    placeholder.style.alignItems = 'center';
+    placeholder.style.justifyContent = 'center';
+    placeholder.style.textAlign = 'center';
+    placeholder.style.padding = '10px';
+    placeholder.style.boxSizing = 'border-box';
+    placeholder.style.fontFamily = '"Source Sans Pro", sans-serif';
+    placeholder.style.overflow = 'hidden';
+    placeholder.style.wordBreak = 'break-word';
+    placeholder.style.color = '#7f4937';
+    placeholder.style.border = '1px solid #e6ddd6';
+    
+    // Create an inner span for the text to have better styling control
+    const textSpan = document.createElement('span');
+    
+    // Format the text
+    textSpan.textContent = text || '#f8f5f1';
+    textSpan.style.opacity = '0.7';
+    textSpan.style.fontSize = width < 150 ? '10px' : '12px';
+    
+    placeholder.appendChild(textSpan);
+    
+    return placeholder;
+}
+
 // Function to load recipe page content
 function loadRecipePage() {
     console.log('Loading recipe page content');
@@ -465,6 +659,9 @@ function loadRecipePage() {
             recipePage.appendChild(mainContent);
             recipePage.appendChild(footer);
             
+            // Set up dropdown menus
+            setupDropdownMenus(recipePage);
+            
             // Set up event listeners on the new elements
             setupRecipePageEventListeners(recipePage);
             
@@ -489,103 +686,12 @@ function loadRecipePage() {
             recipePage.appendChild(mainContent);
             recipePage.appendChild(footer);
             
+            // Set up dropdown menus
+            setupDropdownMenus(recipePage);
+            
             // Set up event listeners
             setupRecipePageEventListeners(recipePage);
         });
-}
-
-// Function to create fallback recipe content
-function createFallbackRecipeContent() {
-    return `
-        <div class="recipe-main">
-            <div class="recipe-header">
-                <h1 class="recipe-title">Šaltibarščiai: vasaros skonis dubenyje</h1>
-                <div class="recipe-meta">
-                    <span>Gegužės 3, 2025</span>
-                    <span>•</span>
-                    <span><a href="#" onclick="showPage('category-page'); loadCategory('Sriubos'); return false;">Sriubos</a></span>
-                    <span>•</span>
-                    <span>Vasaros patiekalai</span>
-                </div>
-            </div>
-            
-            <div class="recipe-image">
-                <div class="local-placeholder" style="width:100%;height:500px;display:flex;align-items:center;justify-content:center;background-color:#f8f5f1;color:#7f4937;border:1px solid #e6ddd6;">
-                    <span style="opacity:0.7;font-size:12px;">Šaltibarščiai</span>
-                </div>
-            </div>
-            
-            <p class="recipe-intro">Ką tik prasidėjus šiltajam sezonui, lietuviškoje virtuvėje atsiranda vienas ryškiausių patiekalų – šaltibarščiai. Ši šalta, ryškiai rožinė sriuba yra tapusi Lietuvos vasaros simboliu ir mano vaikystės atsiminimų dalimi.</p>
-            
-            <!-- Recipe content truncated for brevity -->
-            <div class="recipe-content">
-                <p>Kai buvau maža, mama visada žinodavo, kad atėjo laikas gaminti šaltibarščius, kai termometras pakildavo virš 20 laipsnių. Virtuvėje pasklisdavo žemiškas virtų burokėlių kvapas, o aš su didžiausiu susidomėjimu stebėdavau, kaip raudonieji burokėliai, susijungę su baltu kefyru, sukurdavo tą nepakartojamą, ryškiai rožinę spalvą.</p>
-                
-                <div class="recipe-box">
-                    <h3>Šaltibarščiai</h3>
-                    
-                    <div class="recipe-time">
-                        <div class="recipe-time-item">
-                            <span class="time-label">Paruošimas</span>
-                            <span class="time-value">20 min</span>
-                        </div>
-                        <div class="recipe-time-item">
-                            <span class="time-label">Atvėsinimas</span>
-                            <span class="time-value">2 val</span>
-                        </div>
-                        <div class="recipe-time-item">
-                            <span class="time-label">Porcijos</span>
-                            <span class="time-value">4</span>
-                        </div>
-                    </div>
-                    
-                    <h4>Ingredientai</h4>
-                    <ul>
-                        <li>500 ml kefyro</li>
-                        <li>2-3 vidutinio dydžio virti burokėliai (apie 300g)</li>
-                        <li>1 didelis agurkas</li>
-                        <li>3-4 laiškiniai svogūnai</li>
-                        <li>Didelis kuokštas šviežių krapų (apie 30g)</li>
-                        <li>2 kietai virti kiaušiniai</li>
-                        <li>Druskos ir pipirų pagal skonį</li>
-                        <li>Žiupsnelis citrinų sulčių (nebūtina)</li>
-                        <li>500g mažų bulvių patiekimui</li>
-                    </ul>
-                    
-                    <h4>Gaminimo būdas</h4>
-                    <ol>
-                        <li>Kietai išvirkite kiaušinius (apie 9 minutes). Atvėsinkite po šaltu vandeniu, nulupkite ir atidėkite.</li>
-                        <li>Jei naudojate šviežius burokėlius, nulupkite ir virkite juos iki minkštumo (apie 40-50 minučių), tada visiškai atvėsinkite.</li>
-                        <li>Smulkiai sutarkuokite atvėsusius burokėlius į didelį dubenį.</li>
-                        <li>Smulkiai supjaustykite agurką. Sukapokite laiškinius svogūnus ir šviežius krapus.</li>
-                        <li>Į tarkuotus burokėlius sudėkite agurką, laiškinius svogūnus ir didžiąją dalį krapų (šiek tiek pasilikite papuošimui).</li>
-                        <li>Supilkite kefyrą į dubenį ir gerai išmaišykite. Jei mišinys per tirštas, įpilkite šiek tiek šalto vandens.</li>
-                        <li>Pagardinkite druska ir pipirais pagal skonį. Jei norite šiek tiek rūgštumo, įlašinkite citrinų sulčių.</li>
-                        <li>Atvėsinkite sriubą šaldytuve bent 2 valandas, kad skoniai susijungtų, o sriuba taptų tinkamai šalta.</li>
-                        <li>Kol sriuba vėsta, išvirkite bulves su žiupsneliu druskos, kol jos taps minkštos. Nusausinkite ir laikykite šiltai.</li>
-                        <li>Prieš patiekiant, supjaustykite kietai virtus kiaušinius.</li>
-                        <li>Sriubą pilkite į dubenėlius, į kiekvieną įdėkite šiek tiek supjaustytų kiaušinių ir pabarstykite likusiais krapais.</li>
-                        <li>Patiekite su karštomis virtomis bulvėmis.</li>
-                    </ol>
-                </div>
-            </div>
-            
-            <div class="recipe-footer">
-                <div class="recipe-tags">
-                    <a href="#" onclick="showPage('category-page'); loadCategory('Vasara'); return false;">&#8203;#vasara</a>
-                    <a href="#" onclick="showPage('category-page'); loadCategory('Sriubos'); return false;">&#8203;#sriubos</a>
-                    <a href="#" onclick="showPage('category-page'); loadCategory('Daržovės'); return false;">&#8203;#burokėliai</a>
-                    <a href="#" onclick="showPage('category-page'); loadCategory('Iš močiutės virtuvės'); return false;">&#8203;#tradiciniaireceptai</a>
-                </div>
-                <div class="recipe-share">
-                    <span>Dalintis:</span>
-                    <a href="#"><i class="fa fa-facebook"></i></a>
-                    <a href="#"><i class="fa fa-pinterest"></i></a>
-                    <a href="#"><i class="fa fa-instagram"></i></a>
-                </div>
-            </div>
-        </div>
-    `;
 }
 
 // Function to set up event listeners on the recipe page
@@ -799,129 +905,121 @@ function replacePlaceholders() {
     });
 }
 
-// Create category page if it doesn't exist
-function createCategoryPage() {
-    console.log('Creating category page');
-    
-    let categoryPage = document.getElementById('category-page');
-    
-    // If it already exists, return it
-    if (categoryPage) {
-        return categoryPage;
-    }
-    
-    categoryPage = document.createElement('div');
-    categoryPage.id = 'category-page';
-    categoryPage.className = 'page';
-    
-    // Copy header and footer from home page
-    const homePage = document.getElementById('home-page');
-    if (!homePage) {
-        console.error('Home page not found');
-        return categoryPage;
-    }
-    
-    const header = homePage.querySelector('header').cloneNode(true);
-    const footer = homePage.querySelector('footer').cloneNode(true);
-    
-    // Create main content structure
-    const mainContent = document.createElement('div');
-    mainContent.className = 'container main-content';
-    
-    // Add content main
-    const contentMain = document.createElement('div');
-    contentMain.className = 'content-main';
-    
-    // Add sidebar clone from home page
-    const sidebar = homePage.querySelector('.sidebar').cloneNode(true);
-    
-    // Assemble the page structure
-    mainContent.appendChild(contentMain);
-    mainContent.appendChild(sidebar);
-    
-    categoryPage.appendChild(header);
-    categoryPage.appendChild(mainContent);
-    categoryPage.appendChild(footer);
-    
-    // Add to the document
-    document.body.appendChild(categoryPage);
-    
-    console.log('Category page created successfully');
-    return categoryPage;
-}
-
 // Helper function to validate email
 function isValidEmail(email) {
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
 }
 
-// Execute on page load
-document.addEventListener('DOMContentLoaded', function() {
-    // Ensure the placeholder styles are added
-    const style = document.createElement('style');
-    style.textContent = `
-        .local-placeholder {
-            max-width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 10px;
-            box-sizing: border-box;
-            font-family: 'Source Sans Pro', sans-serif;
-            overflow: hidden;
-            word-break: break-word;
-            background-color: #f8f5f1;
-            color: #7f4937;
-            border: 1px solid #e6ddd6;
-            border-radius: 0;
-            font-weight: normal;
-            line-height: 1.3;
-        }
-        
-        .local-placeholder span {
-            font-family: 'Source Sans Pro', sans-serif;
-            font-size: 12px;
-            font-weight: normal;
-            color: #7f4937;
-            opacity: 0.7;
-            text-transform: none;
-        }
-        
-        .recipe-card-image .local-placeholder {
-            width: 100% !important;
-            aspect-ratio: 1/1;
-        }
-        
-        /* Fix for popular posts styling */
-        .popular-post-img.local-placeholder {
-            width: 60px !important;
-            height: 60px !important;
-            border-radius: 50% !important;
-            object-fit: cover;
-            margin-right: 15px;
-        }
-        
-        /* Fix for latest posts styling */
-        .latest-post-image .local-placeholder {
-            width: 100% !important;
-            height: 100% !important;
-            border-radius: 0 !important;
-        }
+// Create fallback recipe content
+function createFallbackRecipeContent() {
+    return `
+        <div class="recipe-main">
+            <div class="recipe-header">
+                <h1 class="recipe-title">Šaltibarščiai: vasaros skonis dubenyje</h1>
+                <div class="recipe-meta">
+                    <span>Gegužės 3, 2025</span>
+                    <span>•</span>
+                    <span><a href="#" onclick="showPage('category-page'); loadCategory('Sriubos'); return false;">Sriubos</a></span>
+                    <span>•</span>
+                    <span>Vasaros patiekalai</span>
+                </div>
+            </div>
+            
+            <div class="recipe-image">
+                <div class="local-placeholder" style="width:100%;height:500px;display:flex;align-items:center;justify-content:center;background-color:#f8f5f1;color:#7f4937;border:1px solid #e6ddd6;">
+                    <span style="opacity:0.7;font-size:12px;">Šaltibarščiai</span>
+                </div>
+            </div>
+            
+            <p class="recipe-intro">Ką tik prasidėjus šiltajam sezonui, lietuviškoje virtuvėje atsiranda vienas ryškiausių patiekalų – šaltibarščiai. Ši šalta, ryškiai rožinė sriuba yra tapusi Lietuvos vasaros simboliu ir mano vaikystės atsiminimų dalimi.</p>
+            
+            <div class="recipe-content">
+                <p>Kai buvau maža, mama visada žinodavo, kad atėjo laikas gaminti šaltibarščius, kai termometras pakildavo virš 20 laipsnių. Virtuvėje pasklisdavo žemiškas virtų burokėlių kvapas, o aš su didžiausiu susidomėjimu stebėdavau, kaip raudonieji burokėliai, susijungę su baltu kefyru, sukurdavo tą nepakartojamą, ryškiai rožinę spalvą.</p>
+                
+                <div class="recipe-box">
+                    <h3>Šaltibarščiai</h3>
+                    
+                    <div class="recipe-time">
+                        <div class="recipe-time-item">
+                            <span class="time-label">Paruošimas</span>
+                            <span class="time-value">20 min</span>
+                        </div>
+                        <div class="recipe-time-item">
+                            <span class="time-label">Atvėsinimas</span>
+                            <span class="time-value">2 val</span>
+                        </div>
+                        <div class="recipe-time-item">
+                            <span class="time-label">Porcijos</span>
+                            <span class="time-value">4</span>
+                        </div>
+                    </div>
+                    
+                    <h4>Ingredientai</h4>
+                    <ul>
+                        <li>500 ml kefyro</li>
+                        <li>2-3 vidutinio dydžio virti burokėliai (apie 300g)</li>
+                        <li>1 didelis agurkas</li>
+                        <li>3-4 laiškiniai svogūnai</li>
+                        <li>Didelis kuokštas šviežių krapų (apie 30g)</li>
+                        <li>2 kietai virti kiaušiniai</li>
+                        <li>Druskos ir pipirų pagal skonį</li>
+                        <li>Žiupsnelis citrinų sulčių (nebūtina)</li>
+                        <li>500g mažų bulvių patiekimui</li>
+                    </ul>
+                    
+                    <h4>Gaminimo būdas</h4>
+                    <ol>
+                        <li>Kietai išvirkite kiaušinius (apie 9 minutes). Atvėsinkite po šaltu vandeniu, nulupkite ir atidėkite.</li>
+                        <li>Jei naudojate šviežius burokėlius, nulupkite ir virkite juos iki minkštumo (apie 40-50 minučių), tada visiškai atvėsinkite.</li>
+                        <li>Smulkiai sutarkuokite atvėsusius burokėlius į didelį dubenį.</li>
+                        <li>Smulkiai supjaustykite agurką. Sukapokite laiškinius svogūnus ir šviežius krapus.</li>
+                        <li>Į tarkuotus burokėlius sudėkite agurką, laiškinius svogūnus ir didžiąją dalį krapų (šiek tiek pasilikite papuošimui).</li>
+                        <li>Supilkite kefyrą į dubenį ir gerai išmaišykite. Jei mišinys per tirštas, įpilkite šiek tiek šalto vandens.</li>
+                        <li>Pagardinkite druska ir pipirais pagal skonį. Jei norite šiek tiek rūgštumo, įlašinkite citrinų sulčių.</li>
+                        <li>Atvėsinkite sriubą šaldytuve bent 2 valandas, kad skoniai susijungtų, o sriuba taptų tinkamai šalta.</li>
+                        <li>Kol sriuba vėsta, išvirkite bulves su žiupsneliu druskos, kol jos taps minkštos. Nusausinkite ir laikykite šiltai.</li>
+                        <li>Prieš patiekiant, supjaustykite kietai virtus kiaušinius.</li>
+                        <li>Sriubą pilkite į dubenėlius, į kiekvieną įdėkite šiek tiek supjaustytų kiaušinių ir pabarstykite likusiais krapais.</li>
+                        <li>Patiekite su karštomis virtomis bulvėmis.</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="recipe-footer">
+                <div class="recipe-tags">
+                    <a href="#" onclick="showPage('category-page'); loadCategory('Vasara'); return false;">&#8203;#vasara</a>
+                    <a href="#" onclick="showPage('category-page'); loadCategory('Sriubos'); return false;">&#8203;#sriubos</a>
+                    <a href="#" onclick="showPage('category-page'); loadCategory('Daržovės'); return false;">&#8203;#burokėliai</a>
+                    <a href="#" onclick="showPage('category-page'); loadCategory('Iš močiutės virtuvės'); return false;">&#8203;#tradiciniaireceptai</a>
+                </div>
+                <div class="recipe-share">
+                    <span>Dalintis:</span>
+                    <a href="#"><i class="fa fa-facebook"></i></a>
+                    <a href="#"><i class="fa fa-pinterest"></i></a>
+                    <a href="#"><i class="fa fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
     `;
-    document.head.appendChild(style);
-    
+}
+
+// Function to set up navigation handlers
+function setupNavigationHandlers(container = document) {
     // Initialize event listeners for navigation links
-    const navLinks = document.querySelectorAll('nav a, .dropdown-content a');
+    const navLinks = container.querySelectorAll('nav a:not(.dropdown > a), .dropdown-content a');
     navLinks.forEach(link => {
         if (link.hasAttribute('onclick')) {
-            // Already has onclick handler
+            // Skip links with onclick already set
             return;
         }
         
         link.addEventListener('click', function(e) {
-            e.preventDefault();
+            // Handle special cases
+            if (this.textContent.trim() === 'APIE MANE' || this.getAttribute('href') === 'about.html') {
+                // Don't prevent default, let it navigate to about.html
+                return;
+            }
             
             const href = this.getAttribute('href');
             if (href === '#') {
@@ -929,51 +1027,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            if (href.startsWith('#')) {
+            e.preventDefault(); // Prevent default for non-about links
+            
+            if (href && href.startsWith('#')) {
                 const pageId = href.substring(1);
                 showPage(pageId);
-            } else {
+            } else if (href) {
                 window.location.href = href;
             }
         });
     });
+}
+
+// Check for URL parameters on page load
+function checkUrlParameters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const category = urlParams.get('category');
     
-    // Check for and replace any placeholder images
-    replacePlaceholders();
-});
-// Function to handle page switching
-function showPage(pageId) {
-    console.log(`Showing page: ${pageId}`);
-    
-    // Handle "about-page" specially, since it's in a different file
-    if (pageId === 'about-page') {
-        window.location.href = 'about.html';
-        return;
-    }
-    
-    // Hide all pages
-    const pages = document.querySelectorAll('.page');
-    pages.forEach(page => {
-        page.classList.remove('active');
-    });
-    
-    // Show selected page
-    const selectedPage = document.getElementById(pageId);
-    if (selectedPage) {
-        selectedPage.classList.add('active');
-        // Scroll to top when changing pages
-        window.scrollTo(0, 0);
-        
-        // If showing recipe page, load recipe content
-        if (pageId === 'recipe-page') {
-            loadRecipePage();
-        }
-    } else {
-        console.error(`Page with ID '${pageId}' not found`);
+    if (category) {
+        // If there's a category parameter, load that category
+        loadCategory(category);
     }
 }
 
-// Update main navigation to properly handle the About page
+// Execute on page load
 document.addEventListener('DOMContentLoaded', function() {
     // Find the About Me link in the navigation
     const aboutLinks = document.querySelectorAll('a[onclick*="alert(\'Apie mane puslapis ruošiamas\')"]');
@@ -983,4 +1060,16 @@ document.addEventListener('DOMContentLoaded', function() {
         link.removeAttribute('onclick');
         link.setAttribute('href', 'about.html');
     });
+    
+    // Set up the dropdown menus
+    setupDropdownMenus(document);
+    
+    // Set up navigation handlers
+    setupNavigationHandlers();
+    
+    // Check for and replace any placeholder images
+    replacePlaceholders();
+    
+    // Check for URL parameters
+    checkUrlParameters();
 });
