@@ -210,3 +210,69 @@ function searchRecipes(query) {
     alert(`Paieška bus įdiegta netrukus! Jūs ieškojote: ${query}`);
     return false;
 }
+function enhanceDropdownMenus() {
+    const dropdowns = document.querySelectorAll('.dropdown');
+    
+    dropdowns.forEach(dropdown => {
+        const link = dropdown.querySelector('a');
+        const content = dropdown.querySelector('.dropdown-content');
+        
+        if (!link || !content) return;
+        
+        // Variable to track if we should keep the menu open
+        let shouldKeepOpen = false;
+        
+        // Add event listeners to manage hover states
+        dropdown.addEventListener('mouseenter', () => {
+            clearTimeout(dropdown.timeout);
+            content.style.display = 'block';
+        });
+        
+        dropdown.addEventListener('mouseleave', () => {
+            // Don't close immediately, wait a bit in case user is moving to the dropdown
+            dropdown.timeout = setTimeout(() => {
+                if (!shouldKeepOpen) {
+                    content.style.display = 'none';
+                }
+            }, 50);
+        });
+        
+        // Special handling for the dropdown content
+        content.addEventListener('mouseenter', () => {
+            shouldKeepOpen = true;
+            clearTimeout(dropdown.timeout);
+        });
+        
+        content.addEventListener('mouseleave', () => {
+            shouldKeepOpen = false;
+            content.style.display = 'none';
+        });
+        
+        // Handle click on parent link
+        link.addEventListener('click', (e) => {
+            // Prevent default only if it's the direct dropdown parent
+            if (link.parentNode === dropdown && link.getAttribute('href') === '#') {
+                e.preventDefault();
+                
+                // Toggle the display
+                if (content.style.display === 'block') {
+                    content.style.display = 'none';
+                } else {
+                    content.style.display = 'block';
+                }
+            }
+        });
+    });
+}
+function initApp() {
+    console.log('Šaukštas Meilės - Application initialized');
+    
+    // Enable dropdown menu functionality for mobile
+    setupMobileMenu();
+    
+    // Add smooth scrolling to all links
+    setupSmoothScrolling();
+    
+    // Call the function to enhance dropdown menus
+    enhanceDropdownMenus();
+}
