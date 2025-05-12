@@ -403,6 +403,7 @@
     <!-- Inline deferred script for critical functionality -->
     <script>
     // Function to create a styled placeholder that matches the website design
+    // Function to create a styled placeholder that matches the website design
     function createPlaceholderElement(width, height, text, isRound = false) {
         // Create a div element instead of using an external image
         const placeholder = document.createElement('div');
@@ -417,16 +418,28 @@
             placeholder.style.borderRadius = '50%';
         }
         
+        // Base styling to match the website
+        placeholder.style.backgroundColor = '#f8f5f1';
+        placeholder.style.display = 'flex';
+        placeholder.style.alignItems = 'center';
+        placeholder.style.justifyContent = 'center';
+        placeholder.style.textAlign = 'center';
+        placeholder.style.padding = '10px';
+        placeholder.style.boxSizing = 'border-box';
+        placeholder.style.fontFamily = '"Source Sans Pro", sans-serif';
+        placeholder.style.overflow = 'hidden';
+        placeholder.style.fontSize = '12px';
+        placeholder.style.wordBreak = 'break-word';
+        placeholder.style.color = '#7f4937';
+        placeholder.style.border = '1px solid #e6ddd6';
+        
         // Create an inner span for the text to have better styling control
         const textSpan = document.createElement('span');
-        textSpan.textContent = text;
         
-        // Adjust text size based on container size
-        if (width < 150) {
-            textSpan.style.fontSize = '14px';
-        } else {
-            textSpan.style.fontSize = '16px';
-        }
+        // Format the text to look like a HEX code
+        textSpan.textContent = '#f8f5f1';
+        textSpan.style.opacity = '0.7';
+        textSpan.style.fontSize = width < 150 ? '10px' : '12px';
         
         placeholder.appendChild(textSpan);
         
@@ -440,37 +453,41 @@
         placeholderImages.forEach(img => {
             // Extract filename from path
             const filename = img.src.split('/').pop();
-            const nameWithoutExt = filename.split('.')[0];
             
-            // Get alt text for meaningful placeholder
-            const altText = img.alt || nameWithoutExt;
-            
-            // Set dimensions based on image type
+            // Set dimensions based on image type and class
             let width, height, isRound = false;
             
-            if (filename.startsWith('recipe')) {
-                width = 500;
-                height = 500;
-            } else if (filename.startsWith('latest')) {
+            if (img.classList.contains('popular-post-img')) {
+                width = 60;
+                height = 60;
+                isRound = true; // Popular posts are round
+            } else if (img.classList.contains('about-me-img')) {
+                width = 120;
+                height = 120;
+                isRound = true;
+            } else if (img.parentElement && img.parentElement.classList.contains('latest-post-image')) {
                 width = 200;
                 height = 200;
+            } else if (filename.startsWith('recipe')) {
+                width = 500;
+                height = 500;
             } else if (filename.startsWith('popular')) {
-                width = 100;
-                height = 100;
-                isRound = false; // Popular posts are square with rounded corners
+                width = 60;
+                height = 60;
+                isRound = true;
             } else if (filename.startsWith('profile')) {
                 width = 200;
                 height = 200;
-                isRound = true; // Profile is round
+                isRound = true;
             } else {
-                width = 300;
-                height = 300;
+                width = 200;
+                height = 200;
             }
             
             // Try to load the actual image first
             img.addEventListener('error', function() {
                 // Image failed to load, replace with local placeholder div
-                const placeholder = createPlaceholderElement(width, height, altText, isRound);
+                const placeholder = createPlaceholderElement(width, height, '#f8f5f1', isRound);
                 
                 // Add the same classes as the image to maintain styling
                 if (this.className) {

@@ -477,7 +477,7 @@ document.addEventListener('DOMContentLoaded', function() {
             text-align: center;
             padding: 10px;
             box-sizing: border-box;
-            font-family: 'Playfair Display', serif;
+            font-family: 'Source Sans Pro', sans-serif;
             overflow: hidden;
             word-break: break-word;
             background-color: #f8f5f1;
@@ -489,15 +489,33 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         .local-placeholder span {
-            font-family: 'Playfair Display', serif;
-            text-transform: uppercase;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 12px;
             font-weight: normal;
             color: #7f4937;
+            opacity: 0.7;
+            text-transform: none;
         }
         
         .recipe-card-image .local-placeholder {
             width: 100% !important;
             aspect-ratio: 1/1;
+        }
+        
+        /* Fix for popular posts styling */
+        .popular-post-img.local-placeholder {
+            width: 60px !important;
+            height: 60px !important;
+            border-radius: 50% !important;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+        
+        /* Fix for latest posts styling */
+        .latest-post-image .local-placeholder {
+            width: 100% !important;
+            height: 100% !important;
+            border-radius: 0 !important;
         }
     `;
     document.head.appendChild(style);
