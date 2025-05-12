@@ -16,31 +16,692 @@
 <body>
     <!-- Login Page -->
     <div id="login-page">
-        <!-- Login form content -->
+        <div class="login-container">
+            <div class="login-logo">
+                <h1 class="login-title">Šaukštas Meilės</h1>
+                <p class="login-subtitle">Administratoriaus prisijungimas</p>
+            </div>
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label for="username">Vartotojo vardas</label>
+                    <input type="text" id="username" name="username" class="form-control" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Slaptažodis</label>
+                    <input type="password" id="password" name="password" class="form-control" required autocomplete="current-password">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="submit-button">Prisijungti</button>
+                </div>
+                <div class="form-footer">
+                    <p>Šaukštas Meilės Admin Panel &copy; 2025</p>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Admin Dashboard -->
     <div id="admin-dashboard" style="display: none;">
         <header class="admin-header">
-            <!-- Header content -->
+            <div class="container">
+                <h1 class="admin-title"><a href="#">Šaukštas Meilės Admin</a></h1>
+                <nav class="admin-nav">
+                    <ul>
+                        <li><a href="#" onclick="showAdminPage('dashboard')">Pagrindinis</a></li>
+                        <li><a href="#" onclick="showAdminPage('recipes')">Receptai</a></li>
+                        <li><a href="#" onclick="showAdminPage('add-recipe')">Pridėti receptą</a></li>
+                        <li><a href="#" onclick="showAdminPage('comments')">Komentarai</a></li>
+                        <li><a href="#" onclick="showAdminPage('media')">Nuotraukos</a></li>
+                        <li><a href="#" onclick="showAdminPage('about')">Apie mane</a></li>
+                        <li><a href="#" onclick="logout()">Atsijungti</a></li>
+                    </ul>
+                </nav>
+            </div>
         </header>
-        <main class="admin-main">
-            <!-- Dashboard pages content -->
+        
+        <main class="admin-main container">
+            <!-- Dashboard Page -->
+            <div id="page-dashboard" class="admin-page">
+                <div class="dashboard-widgets">
+                    <div class="widget">
+                        <div class="widget-icon">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <div class="widget-count">0</div>
+                        <div class="widget-title">Receptai</div>
+                    </div>
+                    <div class="widget">
+                        <div class="widget-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="widget-count">0</div>
+                        <div class="widget-title">Komentarai</div>
+                    </div>
+                    <div class="widget">
+                        <div class="widget-icon">
+                            <i class="fas fa-images"></i>
+                        </div>
+                        <div class="widget-count">0</div>
+                        <div class="widget-title">Nuotraukos</div>
+                    </div>
+                </div>
+                
+                <div class="admin-section">
+                    <div class="admin-section-header">
+                        <h2 class="admin-section-title">Naujausi receptai</h2>
+                        <a href="#" onclick="showAdminPage('recipes')" class="view-all">Visi receptai</a>
+                    </div>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Pavadinimas</th>
+                                <th>Kategorija</th>
+                                <th>Data</th>
+                                <th>Veiksmai</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Recent recipes will be loaded here -->
+                            <tr>
+                                <td colspan="4" style="text-align: center;">Nėra receptų</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="admin-section">
+                    <div class="admin-section-header">
+                        <h2 class="admin-section-title">Naujausi komentarai</h2>
+                        <a href="#" onclick="showAdminPage('comments')" class="view-all">Visi komentarai</a>
+                    </div>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Autorius</th>
+                                <th>Komentaras</th>
+                                <th>Receptas</th>
+                                <th>Data</th>
+                                <th>Veiksmai</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Recent comments will be loaded here -->
+                            <tr>
+                                <td colspan="5" style="text-align: center;">Nėra komentarų</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Additional pages will be added here -->
+            <!-- Recipes Page -->
+            <div id="page-recipes" class="admin-page" style="display: none;">
+                <div class="admin-section-header">
+                    <h2 class="admin-section-title">Receptai</h2>
+                    <a href="#" onclick="showAdminPage('add-recipe')" class="submit-button">Pridėti naują</a>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" data-tab="all">Visi</div>
+                    <div class="tab" data-tab="published">Publikuoti</div>
+                    <div class="tab" data-tab="draft">Juodraščiai</div>
+                </div>
+                
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Pavadinimas</th>
+                            <th>Kategorija</th>
+                            <th>Data</th>
+                            <th>Statusas</th>
+                            <th>Veiksmai</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Recipes will be loaded here -->
+                    </tbody>
+                </table>
+                
+                <div class="pagination">
+                    <!-- Pagination will be generated here -->
+                </div>
+            </div>
+            
+            <!-- Add Recipe Page -->
+            <div id="page-add-recipe" class="admin-page" style="display: none;">
+                <div class="admin-section-header">
+                    <h2 class="admin-section-title">Pridėti naują receptą</h2>
+                </div>
+                
+                <form class="admin-form">
+                    <div class="form-group">
+                        <label for="recipe-title">Pavadinimas</label>
+                        <input type="text" id="recipe-title" name="title" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="recipe-intro">Įvadas</label>
+                        <textarea id="recipe-intro" name="intro" class="form-control" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Nuotrauka</label>
+                        <div class="file-upload">
+                            <label class="file-upload-label">
+                                <div class="file-upload-text">
+                                    <i class="fas fa-upload file-upload-icon"></i>
+                                    <span>Pasirinkite nuotrauką arba nutempkite ją čia</span>
+                                </div>
+                                <input type="file" id="recipe-image" name="image" class="file-upload-input" accept="image/*">
+                            </label>
+                        </div>
+                        <div id="image-preview" class="image-preview">
+                            <button type="button" class="remove-image"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Kategorijos</label>
+                        <div class="categories-container">
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat-drinks" name="categories[]" value="Gėrimai ir kokteiliai">
+                                <label for="cat-drinks">Gėrimai ir kokteiliai</label>
+                            </div>
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat-desserts" name="categories[]" value="Desertai">
+                                <label for="cat-desserts">Desertai</label>
+                            </div>
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat-soups" name="categories[]" value="Sriubos">
+                                <label for="cat-soups">Sriubos</label>
+                            </div>
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat-appetizers" name="categories[]" value="Užkandžiai">
+                                <label for="cat-appetizers">Užkandžiai</label>
+                            </div>
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat-curd" name="categories[]" value="Varškė">
+                                <label for="cat-curd">Varškė</label>
+                            </div>
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat-eggs" name="categories[]" value="Kiaušiniai">
+                                <label for="cat-eggs">Kiaušiniai</label>
+                            </div>
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat-vegetables" name="categories[]" value="Daržovės">
+                                <label for="cat-vegetables">Daržovės</label>
+                            </div>
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat-potatoes" name="categories[]" value="Bulvės">
+                                <label for="cat-potatoes">Bulvės</label>
+                            </div>
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat-meat" name="categories[]" value="Mėsa">
+                                <label for="cat-meat">Mėsa</label>
+                            </div>
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat-fish" name="categories[]" value="Žuvis ir jūros gėrybės">
+                                <label for="cat-fish">Žuvis ir jūros gėrybės</label>
+                            </div>
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat-grains" name="categories[]" value="Kruopos ir grūdai">
+                                <label for="cat-grains">Kruopos ir grūdai</label>
+                            </div>
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat-gluten-free" name="categories[]" value="Be glitimo">
+                                <label for="cat-gluten-free">Be glitimo</label>
+                            </div>
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat-lactose-free" name="categories[]" value="Be laktozės">
+                                <label for="cat-lactose-free">Be laktozės</label>
+                            </div>
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat-nature" name="categories[]" value="Gamta lėkštėje">
+                                <label for="cat-nature">Gamta lėkštėje</label>
+                            </div>
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat-grandma" name="categories[]" value="Iš močiutės virtuvės">
+                                <label for="cat-grandma">Iš močiutės virtuvės</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Žymos</label>
+                        <div id="tags-container" class="tags-input-container">
+                            <input type="text" id="tags-input" class="tags-input" placeholder="Įveskite žymą ir paspauskite Enter">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Informacija apie receptą</label>
+                        <div class="recipe-info">
+                            <div class="form-group">
+                                <label for="prep-time">Paruošimo laikas (min)</label>
+                                <input type="number" id="prep-time" name="prep_time" class="form-control" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="cook-time">Gaminimo laikas (min)</label>
+                                <input type="number" id="cook-time" name="cook_time" class="form-control" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="servings">Porcijos</label>
+                                <input type="number" id="servings" name="servings" class="form-control" min="1">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Ingredientai</label>
+                        <div id="ingredient-list" class="ingredient-list">
+                            <div class="ingredient-item">
+                                <input type="text" name="ingredients[]" class="form-control" placeholder="Įveskite ingredientą">
+                                <button type="button" class="remove-ingredient-btn"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <button type="button" id="add-ingredient-btn" class="add-ingredient-btn">
+                            <i class="fas fa-plus"></i> Pridėti ingredientą
+                        </button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Gaminimo žingsniai</label>
+                        <div id="step-list" class="step-list">
+                            <div class="step-item">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <textarea name="steps[]" class="form-control" placeholder="Įveskite žingsnio aprašymą"></textarea>
+                                </div>
+                                <div class="step-actions">
+                                    <button type="button" class="remove-ingredient-btn"><i class="fas fa-times"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" id="add-step-btn" class="add-ingredient-btn">
+                            <i class="fas fa-plus"></i> Pridėti žingsnį
+                        </button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="recipe-notes">Pastabos (nebūtina)</label>
+                        <textarea id="recipe-notes" name="notes" class="form-control" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="recipe-status">Statusas</label>
+                        <select id="recipe-status" name="status" class="form-control">
+                            <option value="draft">Juodraštis</option>
+                            <option value="published">Publikuotas</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="button" onclick="saveRecipe()" class="submit-button">Išsaugoti receptą</button>
+                        <button type="button" onclick="showAdminPage('recipes')" class="cancel-button">Atšaukti</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Edit Recipe Page -->
+            <div id="page-edit-recipe" class="admin-page" style="display: none;">
+                <!-- Similar to Add Recipe but with populated form -->
+            </div>
+            
+            <!-- Comments Page -->
+            <div id="page-comments" class="admin-page" style="display: none;">
+                <div class="admin-section-header">
+                    <h2 class="admin-section-title">Komentarai</h2>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" data-tab="all">Visi</div>
+                    <div class="tab" data-tab="approved">Patvirtinti</div>
+                    <div class="tab" data-tab="pending">Laukiantys</div>
+                    <div class="tab" data-tab="spam">Šlamštas</div>
+                </div>
+                
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Autorius</th>
+                            <th>Komentaras</th>
+                            <th>Receptas</th>
+                            <th>Data</th>
+                            <th>Statusas</th>
+                            <th>Veiksmai</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Comments will be loaded here -->
+                    </tbody>
+                </table>
+                
+                <div class="pagination">
+                    <!-- Pagination will be generated here -->
+                </div>
+            </div>
+            
+            <!-- Media Page -->
+            <div id="page-media" class="admin-page" style="display: none;">
+                <div class="admin-section-header">
+                    <h2 class="admin-section-title">Nuotraukų galerija</h2>
+                    <div>
+                        <div class="file-upload" style="display: inline-block;">
+                            <label class="file-upload-label" style="padding: 10px 15px;">
+                                <div class="file-upload-text">
+                                    <i class="fas fa-upload file-upload-icon"></i>
+                                    <span>Įkelti nuotraukas</span>
+                                </div>
+                                <input type="file" id="media-upload" multiple class="file-upload-input" accept="image/*">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" data-tab="all">Visos nuotraukos</div>
+                    <div class="tab" data-tab="recipe">Receptų nuotraukos</div>
+                    <div class="tab" data-tab="gallery">Galerijos nuotraukos</div>
+                </div>
+                
+                <div class="gallery-grid">
+                    <!-- Media will be loaded here -->
+                </div>
+                
+                <div class="pagination">
+                    <!-- Pagination will be generated here -->
+                </div>
+            </div>
+            
+            <!-- About Page -->
+            <div id="page-about" class="admin-page" style="display: none;">
+                <div class="admin-section-header">
+                    <h2 class="admin-section-title">Apie mane puslapio redagavimas</h2>
+                </div>
+                
+                <form class="admin-form">
+                    <div class="form-group">
+                        <label for="about-title">Pagrindinis pavadinimas</label>
+                        <input type="text" id="about-title" name="title" class="form-control" value="Apie Mane">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="about-subtitle">Antraštė po pavadinimu</label>
+                        <input type="text" id="about-subtitle" name="subtitle" class="form-control" value="Kelionė į širdį per maistą, pilną gamtos dovanų, švelnumo ir paprastumo">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Profilio nuotrauka</label>
+                        <div class="file-upload">
+                            <label class="file-upload-label">
+                                <div class="file-upload-text">
+                                    <i class="fas fa-upload file-upload-icon"></i>
+                                    <span>Pasirinkite nuotrauką arba nutempkite ją čia</span>
+                                </div>
+                                <input type="file" id="about-image" name="image" class="file-upload-input" accept="image/*">
+                            </label>
+                        </div>
+                        <div id="about-image-preview" class="image-preview">
+                            <div class="local-placeholder" style="width:100%;height:200px;border-radius:5px;margin-top:15px;display:flex;align-items:center;justify-content:center;background-color:#f8f5f1;color:#7f4937;border:1px solid #e6ddd6;">
+                                <span style="opacity:0.7;font-size:16px;">Profilio nuotrauka</span>
+                            </div>
+                            <button type="button" class="remove-image"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="about-intro">Įvadinis tekstas</label>
+                        <textarea id="about-intro" name="intro" class="form-control" rows="3">Sveiki, esu Lidija – keliaujanti miško takeliais, pievomis ir laukais, kur kiekvienas žolės stiebelis, vėjo dvelksmas ar laukinė uoga tampa įkvėpimu naujam skoniui. Maisto gaminimas ir fotografija man – tai savotiška meditacija, leidžianti trumpam sustoti ir pasimėgauti akimirka šiandieniniame chaose.</textarea>
+                    </div>
+                    
+                    <!-- Sections -->
+                    <div class="form-group">
+                        <label>Skyriai</label>
+                        
+                        <div class="admin-section" style="margin-bottom: 20px;">
+                            <div class="form-group">
+                                <label for="section-1-title">Skyriaus 1 pavadinimas</label>
+                                <input type="text" id="section-1-title" name="section_titles[]" class="form-control" value="Mano istorija">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="section-1-content">Skyriaus 1 turinys</label>
+                                <textarea id="section-1-content" name="section_contents[]" class="form-control" rows="5">Viskas prasidėjo mažoje kaimo virtuvėje, kur mano močiutė Ona ruošdavo kvapnius patiekalus iš paprastų ingredientų. Stebėdavau, kaip jos rankos minkydavo tešlą, kaip ji lengvai ir gracingai sukosi tarp puodų ir keptuvių, kaip pasakodavo apie kiekvieną žolelę, kurią pridėdavo į sriubą ar arbatą.
+
+Baigusi mokyklą, persikėliau į Kauną studijuoti ir pradėjau kurti savo virtuvėje. Dirbau įvairiose maisto srityse – nuo restoranų iki maisto stilistikos žurnalams. Tačiau po ilgo laiko, praleisto mieste, pajutau poreikį grįžti prie savo šaknų, arčiau gamtos, arčiau tų paprastų, bet sodrių skonių, kurie lydėjo mano vaikystę.
+
+Taip ir atsirado mano kulinarinius eksperimentus apjungiantis projektas „Šaukštas Meilės". Šis tinklaraštis gimė iš noro pasidalinti maisto džiaugsmu, gamtos dovanotas receptais ir istorijomis, kurios supa kiekvieną patiekalą.</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-section" style="margin-bottom: 20px;">
+                            <div class="form-group">
+                                <label for="section-2-title">Skyriaus 2 pavadinimas</label>
+                                <input type="text" id="section-2-title" name="section_titles[]" class="form-control" value="Mano filosofija">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="section-2-content">Skyriaus 2 turinys</label>
+                                <textarea id="section-2-content" name="section_contents[]" class="form-control" rows="5">Tikiu, kad maistas yra daugiau nei tik kuras mūsų kūnui – tai būdas sujungti žmones, išsaugoti tradicijas ir kurti naujus prisiminimus. Mano kulinarinė filosofija grindžiama trimis pagrindiniais principais:
+
+Paprastumas. Geriausios receptų idėjos dažnai gimsta iš paprastumo. Naudoju nedaug ingredientų, bet kiekvienas jų atlieka svarbų vaidmenį patiekalo skonio ir tekstūros harmonijoje.
+
+Sezoniniai produktai. Gamta yra geriausia šefė, todėl gerbiu jos ritmą ir renkuosi produktus, kurie yra savo geriausios kokybės tuo metu. Pavasario žalumynai, vasaros uogos, rudens grybai ir žiemos šakniavaisiai – kiekvienas sezonas turi savo išskirtinį charakterį.
+
+Tradicijų puoselėjimas. Lietuviška virtuvė turi gilias tradicijas, kurias stengiuosi išsaugoti ir perteikti šiuolaikiniam skoniui. Kas gali būti geriau nei močiutės receptai, pritaikyti šiandieniniam gyvenimui?</textarea>
+                            </div>
+                        </div>
+                        
+                        <button type="button" id="add-section-btn" class="add-ingredient-btn">
+                            <i class="fas fa-plus"></i> Pridėti skyrių
+                        </button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="about-email">Kontaktinis el. paštas</label>
+                        <input type="email" id="about-email" name="email" class="form-control" value="lidija@saukstas-meiles.lt">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Socialiniai tinklai</label>
+                        
+                        <div class="form-group">
+                            <label for="facebook-url">Facebook URL</label>
+                            <input type="url" id="facebook-url" name="facebook_url" class="form-control" value="https://facebook.com/saukstas.meiles">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="instagram-url">Instagram URL</label>
+                            <input type="url" id="instagram-url" name="instagram_url" class="form-control" value="https://instagram.com/saukstas.meiles">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="pinterest-url">Pinterest URL</label>
+                            <input type="url" id="pinterest-url" name="pinterest_url" class="form-control" value="https://pinterest.com/saukstas.meiles">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="button" onclick="saveAboutPage()" class="submit-button">Išsaugoti pakeitimus</button>
+                        <button type="button" onclick="showAdminPage('dashboard')" class="cancel-button">Atšaukti</button>
+                    </div>
+                </form>
+            </div>
         </main>
     </div>
 
-    <!-- Modals -->
+    <!-- Comment Modal -->
     <div class="modal-backdrop" id="comment-modal">
-        <!-- Comment modal content -->
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="comment-modal-title">Komentaro peržiūra</h3>
+                <button type="button" class="modal-close" onclick="closeModal('comment-modal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div id="comment-view">
+                    <!-- Comment view content will be loaded here -->
+                </div>
+                <div id="comment-edit" style="display: none;">
+                    <div class="form-group">
+                        <label for="edit-comment-author">Autorius</label>
+                        <input type="text" id="edit-comment-author" name="author" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-comment-email">El. paštas</label>
+                        <input type="email" id="edit-comment-email" name="email" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-comment-content">Komentaras</label>
+                        <textarea id="edit-comment-content" name="content" class="form-control" rows="5" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-comment-status">Statusas</label>
+                        <select id="edit-comment-status" name="status" class="form-control">
+                            <option value="approved">Patvirtintas</option>
+                            <option value="pending">Laukiantis</option>
+                            <option value="spam">Šlamštas</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="cancel-button" onclick="closeModal('comment-modal')">Uždaryti</button>
+                <button type="button" id="comment-save-btn" class="submit-button" onclick="saveComment()" style="display: none;">Išsaugoti</button>
+            </div>
+        </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
     <div class="modal-backdrop" id="delete-modal">
-        <!-- Delete confirmation modal content -->
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Patvirtinti ištrynimą</h3>
+                <button type="button" class="modal-close" onclick="closeModal('delete-modal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p>Ar tikrai norite ištrinti šį elementą? Šio veiksmo nebus galima atšaukti.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="cancel-button" onclick="closeModal('delete-modal')">Atšaukti</button>
+                <button type="button" class="submit-button" style="background-color: #cf5151;" onclick="deleteItem()">Ištrinti</button>
+            </div>
+        </div>
     </div>
+
+    <!-- Notification -->
     <div class="notification notification-success" id="notification">
-        <!-- Notification content -->
+        <div class="notification-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="notification-content">
+            <div class="notification-title">Sėkmė</div>
+            <div class="notification-message">Veiksmas atliktas sėkmingai!</div>
+        </div>
+        <button type="button" class="notification-close" onclick="hideNotification()"><i class="fas fa-times"></i></button>
     </div>
 
     <!-- Scripts -->
     <script src="js/admin.js"></script>
+    <script>
+    // Temporary login handling to demonstrate the admin panel
+    document.addEventListener('DOMContentLoaded', function() {
+        const loginForm = document.getElementById('login-form');
+        if (loginForm) {
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                // Simple mock login (in a real system, this would be handled by the backend)
+                if (username && password) {
+                    // Hide login page, show dashboard
+                    document.getElementById('login-page').style.display = 'none';
+                    document.getElementById('admin-dashboard').style.display = 'block';
+                    
+                    // Show dashboard page
+                    showAdminPage('dashboard');
+                    
+                    // Show success notification
+                    showNotification('Sėkmė', 'Prisijungta sėkmingai!', 'success');
+                } else {
+                    showNotification('Klaida', 'Prašome įvesti vartotojo vardą ir slaptažodį', 'error');
+                }
+            });
+        }
+        
+        // Make sure notification and modal functions are available
+        window.showNotification = function(title, message, type = 'success') {
+            const notification = document.getElementById('notification');
+            if (!notification) return;
+            
+            const notificationTitle = notification.querySelector('.notification-title');
+            const notificationMessage = notification.querySelector('.notification-message');
+            const notificationIcon = notification.querySelector('.notification-icon i');
+            
+            if (notificationTitle && notificationMessage && notificationIcon) {
+                // Set notification content
+                notificationTitle.textContent = title;
+                notificationMessage.textContent = message;
+                
+                // Set notification type
+                notification.className = 'notification';
+                if (type === 'success') {
+                    notification.classList.add('notification-success');
+                    notificationIcon.className = 'fas fa-check-circle';
+                } else if (type === 'error') {
+                    notification.classList.add('notification-error');
+                    notificationIcon.className = 'fas fa-exclamation-circle';
+                }
+                
+                // Show notification
+                notification.classList.add('show');
+                
+                // Auto-hide notification after 5 seconds
+                setTimeout(() => {
+                    hideNotification();
+                }, 5000);
+            }
+        }
+        
+        window.hideNotification = function() {
+            const notification = document.getElementById('notification');
+            if (notification) {
+                notification.classList.remove('show');
+            }
+        }
+        
+        window.closeModal = function(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('show');
+            }
+        }
+        
+        // Function to switch between admin pages
+        window.showAdminPage = function(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.admin-page');
+            pages.forEach(page => {
+                page.style.display = 'none';
+            });
+            
+            // Show selected page
+            const selectedPage = document.getElementById(`page-${pageId}`);
+            if (selectedPage) {
+                selectedPage.style.display = 'block';
+            }
+        }
+        
+        // Simple logout function
+        window.logout = function() {
+            document.getElementById('login-page').style.display = 'block';
+            document.getElementById('admin-dashboard').style.display = 'none';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+    });
+    </script>
 </body>
 </html>
