@@ -222,35 +222,6 @@
             height: 250px;
             object-fit: cover;
         }
-        
-        /* Local placeholder styling */
-        .local-placeholder {
-            max-width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 10px;
-            box-sizing: border-box;
-            font-family: 'Source Sans Pro', sans-serif;
-            overflow: hidden;
-            word-break: break-word;
-            background-color: #f8f5f1;
-            color: #7f4937;
-            border: 1px solid #e6ddd6;
-            border-radius: 0;
-            font-weight: normal;
-            line-height: 1.3;
-        }
-        
-        .local-placeholder span {
-            font-family: 'Source Sans Pro', sans-serif;
-            font-size: 12px;
-            font-weight: normal;
-            color: #7f4937;
-            opacity: 0.7;
-            text-transform: none;
-        }
     </style>
 </head>
 <body>
@@ -301,9 +272,7 @@
                     </div>
                     
                     <div class="about-image">
-                        <div class="local-placeholder" style="width:100%;height:500px;">
-                            <span>Lidija miško takeliu</span>
-                        </div>
+                        <!-- Profile image will be added dynamically -->
                     </div>
                     
                     <p class="about-intro">Sveiki, esu Lidija – keliaujanti miško takeliais, pievomis ir laukais, kur kiekvienas žolės stiebelis, vėjo dvelksmas ar laukinė uoga tampa įkvėpimu naujam skoniui. Maisto gaminimas ir fotografija man – tai savotiška meditacija, leidžianti trumpam sustoti ir pasimėgauti akimirka šiandieniniame chaose.</p>
@@ -345,26 +314,7 @@
                             <p>Fotografuoju savo patiekalus natūralioje šviesoje, dažniausiai ant seno medinio stalo prie lango, kuris žvelgia į sodą. Tikiu, kad maisto nuotraukos turi perteikti ne tik patiekalo išvaizdą, bet ir atmosferą, istoriją, prisiminimus, kuriuos tas patiekalas sukelia.</p>
                             
                             <div class="gallery-grid">
-                                <div class="gallery-item">
-                                    <div class="local-placeholder" style="width:100%;height:250px;">
-                                        <span>Mano virtuvė</span>
-                                    </div>
-                                </div>
-                                <div class="gallery-item">
-                                    <div class="local-placeholder" style="width:100%;height:250px;">
-                                        <span>Fotografavimo kampas</span>
-                                    </div>
-                                </div>
-                                <div class="gallery-item">
-                                    <div class="local-placeholder" style="width:100%;height:250px;">
-                                        <span>Žolynų džiovinimas</span>
-                                    </div>
-                                </div>
-                                <div class="gallery-item">
-                                    <div class="local-placeholder" style="width:100%;height:250px;">
-                                        <span>Daržas</span>
-                                    </div>
-                                </div>
+                                <!-- Gallery photos will be added dynamically -->
                             </div>
                         </div>
                         
@@ -373,21 +323,7 @@
                             <p>Per savo kulinarinę kelionę sukūriau daugybę receptų, tačiau keli iš jų tapo ypatingais mano širdžiai:</p>
                             
                             <div class="recipe-photos">
-                                <a href="#" onclick="showPage('recipe-page'); return false;" class="recipe-photo">
-                                    <div class="local-placeholder" style="width:100%;height:200px;">
-                                        <span>Šaltibarščiai</span>
-                                    </div>
-                                </a>
-                                <a href="#" onclick="showPage('recipe-page'); return false;" class="recipe-photo">
-                                    <div class="local-placeholder" style="width:100%;height:200px;">
-                                        <span>Medaus pyragas</span>
-                                    </div>
-                                </a>
-                                <a href="#" onclick="showPage('recipe-page'); return false;" class="recipe-photo">
-                                    <div class="local-placeholder" style="width:100%;height:200px;">
-                                        <span>Kugelis</span>
-                                    </div>
-                                </a>
+                                <!-- Featured recipes will be added dynamically -->
                             </div>
                             
                             <p>Šie receptai yra sujungti su mano asmeniniais prisiminimais ir istorijomis, todėl jie tapo ypatingai svarbūs mano kulinarinėje kelionėje.</p>
@@ -430,8 +366,8 @@
             <aside class="sidebar">
                 <div class="sidebar-section">
                     <h3 class="sidebar-title">Apie mane</h3>
-                    <div class="local-placeholder about-me-img" style="width:120px;height:120px;border-radius:50%;margin:0 auto 15px;display:block;">
-                        <span>Lidija</span>
+                    <div class="about-me-img">
+                        <!-- Sidebar profile image will be added dynamically -->
                     </div>
                     <div class="about-me-text">
                         <p>Sveiki, esu Lidija – keliaujanti miško takeliais, pievomis ir laukais, kur kiekvienas žolės stiebelis, vėjo dvelksmas ar laukinė uoga tampa įkvėpimu naujam skoniui. Maisto gaminimas ir fotografija man – tai savotiška meditacija, leidžianti trumpam sustoti ir pasimėgauti akimirka šiandieniniame chaose.</p>
@@ -446,54 +382,28 @@
                 <div class="sidebar-section">
                     <h3 class="sidebar-title">Populiarūs receptai</h3>
                     <ul class="popular-posts-list">
-                        <li class="popular-post-item">
-                            <div class="local-placeholder popular-post-img" style="width:60px;height:60px;border-radius:50%;margin-right:15px;">
-                                <span>Kugelis</span>
-                            </div>
-                            <div>
-                                <h4 class="popular-post-title"><a href="#" onclick="showPage('recipe-page'); return false;">Kugelis (bulvių plokštainis)</a></h4>
-                                <span class="popular-post-date">Kovo 15, 2025</span>
-                            </div>
-                        </li>
-                        <li class="popular-post-item">
-                            <div class="local-placeholder popular-post-img" style="width:60px;height:60px;border-radius:50%;margin-right:15px;">
-                                <span>Šakotis</span>
-                            </div>
-                            <div>
-                                <h4 class="popular-post-title"><a href="#" onclick="showPage('recipe-page'); return false;">Šakotis: lietuviškas medžio tortas</a></h4>
-                                <span class="popular-post-date">Vasario 28, 2025</span>
-                            </div>
-                        </li>
-                        <li class="popular-post-item">
-                            <div class="local-placeholder popular-post-img" style="width:60px;height:60px;border-radius:50%;margin-right:15px;">
-                                <span>Tinginys</span>
-                            </div>
-                            <div>
-                                <h4 class="popular-post-title"><a href="#" onclick="showPage('recipe-page'); return false;">Tinginys: desertas užimtoms dienoms</a></h4>
-                                <span class="popular-post-date">Vasario 10, 2025</span>
-                            </div>
-                        </li>
+                        <!-- Popular recipes will be added dynamically -->
                     </ul>
                 </div>
                 
                 <div class="sidebar-section">
                     <h3 class="sidebar-title">Kategorijos</h3>
                     <ul class="categories-list">
-                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Gėrimai ir kokteiliai'); return false;">Gėrimai ir kokteiliai <span class="category-count">8</span></a></li>
-                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Desertai'); return false;">Desertai <span class="category-count">14</span></a></li>
-                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Sriubos'); return false;">Sriubos <span class="category-count">10</span></a></li>
-                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Užkandžiai'); return false;">Užkandžiai <span class="category-count">12</span></a></li>
-                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Varškė'); return false;">Varškė <span class="category-count">7</span></a></li>
-                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Kiaušiniai'); return false;">Kiaušiniai <span class="category-count">5</span></a></li>
-                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Daržovės'); return false;">Daržovės <span class="category-count">16</span></a></li>
-                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Bulvės'); return false;">Bulvės <span class="category-count">9</span></a></li>
-                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Mėsa'); return false;">Mėsa <span class="category-count">13</span></a></li>
-                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Žuvis ir jūros gėrybės'); return false;">Žuvis ir jūros gėrybės <span class="category-count">6</span></a></li>
-                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Kruopos ir grūdai'); return false;">Kruopos ir grūdai <span class="category-count">8</span></a></li>
-                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Be glitimo'); return false;">Be glitimo <span class="category-count">4</span></a></li>
-                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Be laktozės'); return false;">Be laktozės <span class="category-count">3</span></a></li>
-                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Gamta lėkštėje'); return false;">Gamta lėkštėje <span class="category-count">11</span></a></li>
-                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Iš močiutės virtuvės'); return false;">Iš močiutės virtuvės <span class="category-count">18</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Gėrimai ir kokteiliai'); return false;">Gėrimai ir kokteiliai <span class="category-count">0</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Desertai'); return false;">Desertai <span class="category-count">0</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Sriubos'); return false;">Sriubos <span class="category-count">0</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Užkandžiai'); return false;">Užkandžiai <span class="category-count">0</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Varškė'); return false;">Varškė <span class="category-count">0</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Kiaušiniai'); return false;">Kiaušiniai <span class="category-count">0</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Daržovės'); return false;">Daržovės <span class="category-count">0</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Bulvės'); return false;">Bulvės <span class="category-count">0</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Mėsa'); return false;">Mėsa <span class="category-count">0</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Žuvis ir jūros gėrybės'); return false;">Žuvis ir jūros gėrybės <span class="category-count">0</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Kruopos ir grūdai'); return false;">Kruopos ir grūdai <span class="category-count">0</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Be glitimo'); return false;">Be glitimo <span class="category-count">0</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Be laktozės'); return false;">Be laktozės <span class="category-count">0</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Gamta lėkštėje'); return false;">Gamta lėkštėje <span class="category-count">0</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Iš močiutės virtuvės'); return false;">Iš močiutės virtuvės <span class="category-count">0</span></a></li>
                     </ul>
                 </div>
                 
@@ -530,112 +440,7 @@
     <script src="js/main.js"></script>
     
     <script>
-        // Function to create a styled placeholder that matches the website design
-        function createPlaceholderElement(width, height, text, isRound = false) {
-            // Create a div element instead of using an external image
-            const placeholder = document.createElement('div');
-            placeholder.className = 'local-placeholder';
-            
-            // Set dimensions
-            placeholder.style.width = width + 'px';
-            placeholder.style.height = height + 'px';
-            
-            // Set border radius if round
-            if (isRound) {
-                placeholder.style.borderRadius = '50%';
-            }
-            
-            // Base styling to match the website
-            placeholder.style.backgroundColor = '#f8f5f1';
-            placeholder.style.display = 'flex';
-            placeholder.style.alignItems = 'center';
-            placeholder.style.justifyContent = 'center';
-            placeholder.style.textAlign = 'center';
-            placeholder.style.padding = '10px';
-            placeholder.style.boxSizing = 'border-box';
-            placeholder.style.fontFamily = '"Source Sans Pro", sans-serif';
-            placeholder.style.overflow = 'hidden';
-            placeholder.style.wordBreak = 'break-word';
-            placeholder.style.color = '#7f4937';
-            placeholder.style.border = '1px solid #e6ddd6';
-            
-            // Create an inner span for the text to have better styling control
-            const textSpan = document.createElement('span');
-            
-            // Set the text
-            textSpan.textContent = text || '#f8f5f1';
-            textSpan.style.opacity = '0.7';
-            textSpan.style.fontSize = width < 150 ? '10px' : '12px';
-            
-            placeholder.appendChild(textSpan);
-            
-            return placeholder;
-        }
-        
-        // Initialize image placeholder replacement immediately
-        function replacePlaceholdersNow() {
-            const placeholderImages = document.querySelectorAll('img[src^="img/placeholders/"]');
-            
-            placeholderImages.forEach(img => {
-                // Extract filename from path
-                const filename = img.src.split('/').pop();
-                
-                // Set dimensions based on image type and class
-                let width, height, isRound = false;
-                
-                if (img.classList.contains('popular-post-img')) {
-                    width = 60;
-                    height = 60;
-                    isRound = true; // Popular posts are round
-                } else if (img.classList.contains('about-me-img')) {
-                    width = 120;
-                    height = 120;
-                    isRound = true;
-                } else if (img.parentElement && img.parentElement.classList.contains('latest-post-image')) {
-                    width = 200;
-                    height = 200;
-                } else if (filename.startsWith('recipe')) {
-                    width = 500;
-                    height = 500;
-                } else if (filename.startsWith('popular')) {
-                    width = 60;
-                    height = 60;
-                    isRound = true;
-                } else if (filename.startsWith('profile')) {
-                    width = 200;
-                    height = 200;
-                    isRound = true;
-                } else {
-                    width = 200;
-                    height = 200;
-                }
-                
-                // Try to load the actual image first
-                img.addEventListener('error', function() {
-                    // Image failed to load, replace with local placeholder div
-                    const placeholder = createPlaceholderElement(width, height, img.alt || filename, isRound);
-                    
-                    // Add the same classes as the image to maintain styling
-                    if (this.className) {
-                        placeholder.className += ' ' + this.className;
-                    }
-                    
-                    if (this.parentNode) {
-                        this.parentNode.replaceChild(placeholder, this);
-                    }
-                });
-                
-                // Force error if image is already broken
-                if (img.complete && img.naturalWidth === 0) {
-                    img.dispatchEvent(new Event('error'));
-                }
-            });
-        }
-        
-        // Execute immediately
         document.addEventListener('DOMContentLoaded', function() {
-            replacePlaceholdersNow();
-            
             // Set up contact form submission
             const contactForm = document.querySelector('.contact-form form');
             if (contactForm) {
