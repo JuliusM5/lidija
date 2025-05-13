@@ -7,6 +7,10 @@ const path = require('path');
 const fs = require('fs');
 const fileUpload = require('express-fileupload');
 const helmet = require('helmet');
+const dotenv = require('dotenv');
+
+// Load environment variables
+dotenv.config();
 
 // Import route modules
 const recipesRoutes = require('./routes/recipes');
@@ -15,26 +19,30 @@ const commentsRoutes = require('./routes/comments');
 const aboutRoutes = require('./routes/about');
 const newsletterRoutes = require('./routes/newsletter');
 const adminRoutes = require('./routes/admin');
+const mediaRoutes = require('./routes/media');
 
 // Import utility functions
-const { RECIPES_FILE, COMMENTS_FILE, USERS_FILE, ABOUT_FILE, SUBSCRIBERS_FILE } = require('./utils/fileUtil');
+const { 
+  ensureDirectoriesExist,
+  RECIPES_FILE, 
+  COMMENTS_FILE, 
+  USERS_FILE, 
+  ABOUT_FILE, 
+  SUBSCRIBERS_FILE
+} = require('./utils/fileUtil');
 
 // Create Express app
 const app = express();
-const PORT = process.env.PORT || 3001; // Changed to 3001 as an alternative
+const PORT = process.env.PORT || 3001;
 
 // Environment configuration
 const isProduction = process.env.NODE_ENV === 'production';
 
-// Initialize data files and directories if they don't exist
-function initializeDataFiles() {
-  // Ensure data directory exists
-  const dataDir = path.dirname(RECIPES_FILE);
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
+// Initialize data files and directories
+ensureDirectoriesExist();
 
-  // Create empty data files if they don't exist
+// Ensure data files exist with empty defaults
+function initializeDataFiles() {
   const dataFiles = [
     { path: RECIPES_FILE, defaultContent: '[]' },
     { path: COMMENTS_FILE, defaultContent: '[]' },
@@ -49,36 +57,21 @@ function initializeDataFiles() {
       console.log(`Created empty data file: ${file.path}`);
     }
   });
-
-  // Ensure upload directories exist
-  const uploadDirs = [
-    path.join(__dirname, '../public/img/recipes'),
-    path.join(__dirname, '../public/img/about'),
-    path.join(__dirname, '../public/img/gallery')
-  ];
-
-  uploadDirs.forEach(dir => {
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-      console.log(`Created upload directory: ${dir}`);
-    }
-  });
 }
 
 // Initialize data files
 initializeDataFiles();
 
-// Security middleware (only apply certain headers in production)
+// Security middleware
 if (isProduction) {
-  // Helmet helps secure Express apps by setting HTTP response headers
   app.use(helmet({
-    contentSecurityPolicy: false, // Disable CSP to allow inline scripts (enable and configure for better security)
+    contentSecurityPolicy: false, // Disabled for development
   }));
 }
 
 // Middleware
 app.use(cors());
-app.use(morgan(isProduction ? 'combined' : 'dev')); // More detailed logging in production
+app.use(morgan(isProduction ? 'combined' : 'dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(fileUpload({
@@ -86,13 +79,13 @@ app.use(fileUpload({
   limits: { 
     fileSize: 10 * 1024 * 1024 // 10MB file size limit
   },
-  useTempFiles: isProduction, // Use temp files in production for better performance with large files
+  useTempFiles: true,
   tempFileDir: '/tmp/'
 }));
 
 // Static files
 app.use(express.static(path.join(__dirname, '../public'), {
-  maxAge: isProduction ? '1d' : 0 // Add cache control in production
+  maxAge: isProduction ? '1d' : 0
 }));
 
 // API routes
@@ -101,10 +94,11 @@ app.use('/api/categories', categoriesRoutes);
 app.use('/api/comments', commentsRoutes);
 app.use('/api/about', aboutRoutes);
 app.use('/api/newsletter', newsletterRoutes);
-app.use('/admin-connector', adminRoutes);
+app.use('/api/media', mediaRoutes);
+app.use('/admin-api', adminRoutes);
 
 // Handle HTML routes
-app.get('/', (req, res) => {
+app.get(['/', '/index.html'], (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 

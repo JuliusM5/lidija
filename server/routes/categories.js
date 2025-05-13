@@ -5,6 +5,23 @@ const router = express.Router();
 const { loadData, RECIPES_FILE } = require('../utils/fileUtil');
 
 /**
+ * Helper function to slugify text
+ * @param {string} text - Text to slugify
+ * @returns {string} - URL-friendly slug
+ */
+function slugify(text) {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+}
+
+/**
  * GET /api/categories
  * Get all categories or recipes for a specific category
  */
@@ -35,7 +52,8 @@ router.get('/', (req, res) => {
     'Be glitimo': 'Skanūs receptai tiems, kas vengia glitimo.',
     'Be laktozės': 'Gardūs patiekalai be laktozės.',
     'Gamta lėkštėje': 'Receptai su laukiniais augalais ir gamtos dovanomis.',
-    'Iš močiutės virtuvės': 'Tradiciniai lietuviški receptai, perduodami iš kartos į kartą.'
+    'Iš močiutės virtuvės': 'Tradiciniai lietuviški receptai, perduodami iš kartos į kartą.',
+    'Vasara': 'Vasaros skoniai ir kvapai jūsų virtuvėje.',
   };
   
   // If category name is provided, get recipes for that category
@@ -51,12 +69,28 @@ router.get('/', (req, res) => {
     const perPage = parseInt(per_page);
     const offset = (pageNum - 1) * perPage;
     const totalRecipes = categoryRecipes.length;
+    
+    // Sort by date (newest first)
+    categoryRecipes.sort((a, b) => {
+      const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
+      const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
+      return dateB - dateA;
+    });
+    
     const paginatedRecipes = categoryRecipes.slice(offset, offset + perPage);
+    
+    // Add slug to each recipe if not exists
+    paginatedRecipes.forEach(recipe => {
+      if (!recipe.slug) {
+        recipe.slug = slugify(recipe.title);
+      }
+    });
     
     // Return category data with recipes
     return res.json({
       success: true,
       name,
+      slug: slugify(name),
       title: name,
       description: descriptions[name] || `Receptai kategorijoje "${name}".`,
       recipes: paginatedRecipes,
@@ -68,31 +102,31 @@ router.get('/', (req, res) => {
   } else {
     // Get all categories with counts
     const categories = [];
-    const categoryNames = [];
+    const categoryNames = new Set();
     
     // Extract all unique categories from recipes
     publishedRecipes.forEach(recipe => {
       if (recipe.categories && Array.isArray(recipe.categories)) {
         recipe.categories.forEach(category => {
-          if (!categoryNames.includes(category)) {
-            categoryNames.push(category);
-          }
+          categoryNames.add(category);
         });
       }
     });
     
     // Sort categories alphabetically
-    categoryNames.sort();
+    const sortedCategories = Array.from(categoryNames).sort();
     
     // Count recipes in each category
-    categoryNames.forEach(category => {
+    sortedCategories.forEach(category => {
       const count = publishedRecipes.filter(recipe => 
         recipe.categories && recipe.categories.includes(category)
       ).length;
       
       categories.push({
         name: category,
-        count
+        slug: slugify(category),
+        count,
+        description: descriptions[category] || ''
       });
     });
     
@@ -102,6 +136,54 @@ router.get('/', (req, res) => {
       categories
     });
   }
+});
+
+/**
+ * GET /api/categories/tags
+ * Get all tags with counts
+ */
+router.get('/tags', (req, res) => {
+  // Load recipes data
+  const recipes = loadData(RECIPES_FILE);
+  
+  // Show only published recipes
+  const publishedRecipes = recipes.filter(recipe => 
+    recipe.status === 'published'
+  );
+  
+  // Get all tags with counts
+  const tags = [];
+  const tagNames = new Set();
+  
+  // Extract all unique tags from recipes
+  publishedRecipes.forEach(recipe => {
+    if (recipe.tags && Array.isArray(recipe.tags)) {
+      recipe.tags.forEach(tag => {
+        tagNames.add(tag);
+      });
+    }
+  });
+  
+  // Sort tags alphabetically
+  const sortedTags = Array.from(tagNames).sort();
+  
+  // Count recipes for each tag
+  sortedTags.forEach(tag => {
+    const count = publishedRecipes.filter(recipe => 
+      recipe.tags && recipe.tags.includes(tag)
+    ).length;
+    
+    tags.push({
+      name: tag,
+      slug: slugify(tag),
+      count
+    });
+  });
+  
+  return res.json({
+    success: true,
+    tags
+  });
 });
 
 module.exports = router;

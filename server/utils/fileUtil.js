@@ -5,7 +5,7 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
 // Define constants for file paths - use environment variables if available
-const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '../data');
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '../../data');
 const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(__dirname, '../../public/img');
 const RECIPES_FILE = path.join(DATA_DIR, 'recipes.json');
 const COMMENTS_FILE = path.join(DATA_DIR, 'comments.json');
@@ -13,7 +13,9 @@ const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const ABOUT_FILE = path.join(DATA_DIR, 'about.json');
 const SUBSCRIBERS_FILE = path.join(DATA_DIR, 'subscribers.json');
 
-// Function to ensure directories exist - called by server.js
+/**
+ * Ensure all required directories exist
+ */
 function ensureDirectoriesExist() {
   const directories = [
     DATA_DIR,
@@ -40,7 +42,14 @@ function loadData(filePath) {
   try {
     if (fs.existsSync(filePath)) {
       const jsonData = fs.readFileSync(filePath, 'utf8');
-      return JSON.parse(jsonData || '{}');
+      // Handle both empty files and parsing errors
+      try {
+        return jsonData ? JSON.parse(jsonData) : 
+               (path.basename(filePath) === 'about.json' ? {} : []);
+      } catch (parseError) {
+        console.error(`Error parsing JSON from ${filePath}:`, parseError);
+        return path.basename(filePath) === 'about.json' ? {} : [];
+      }
     }
     // Return empty array or object based on expected format
     return path.basename(filePath) === 'about.json' ? {} : [];
@@ -148,7 +157,7 @@ function countMediaFiles() {
   // Count files in subdirectories
   const subdirs = fs.readdirSync(UPLOADS_DIR).filter(file => {
     const filePath = path.join(UPLOADS_DIR, file);
-    return fs.statSync(filePath).isDirectory();
+    return fs.existsSync(filePath) && fs.statSync(filePath).isDirectory();
   });
   
   subdirs.forEach(subdir => {
@@ -156,6 +165,69 @@ function countMediaFiles() {
   });
   
   return count;
+}
+
+/**
+ * Get all media files with metadata
+ * @param {string} type - Media type filter (all, recipes, gallery, about)
+ * @returns {Array} - Array of media file objects
+ */
+function getMediaFiles(type = 'all') {
+  const mediaFiles = [];
+  
+  // Base uploads directory
+  const uploadsDir = UPLOADS_DIR;
+  
+  // Directories to scan based on type
+  const dirsToScan = [];
+  
+  if (type === 'all') {
+    // Scan all directories
+    const subdirs = fs.readdirSync(uploadsDir)
+      .filter(file => {
+        const filePath = path.join(uploadsDir, file);
+        return fs.existsSync(filePath) && fs.statSync(filePath).isDirectory();
+      })
+      .map(dir => path.join(uploadsDir, dir));
+    
+    dirsToScan.push(...subdirs);
+  } else if (['recipes', 'gallery', 'about'].includes(type)) {
+    const typeDir = path.join(uploadsDir, type);
+    if (fs.existsSync(typeDir)) {
+      dirsToScan.push(typeDir);
+    }
+  }
+  
+  // Scan directories
+  dirsToScan.forEach(dir => {
+    if (fs.existsSync(dir)) {
+      const files = fs.readdirSync(dir)
+        .filter(file => {
+          const ext = path.extname(file).toLowerCase();
+          return ['.jpg', '.jpeg', '.png', '.gif'].includes(ext);
+        });
+      
+      files.forEach(file => {
+        const filePath = path.join(dir, file);
+        if (fs.existsSync(filePath)) {
+          const stats = fs.statSync(filePath);
+          
+          mediaFiles.push({
+            id: file,
+            name: file,
+            path: `${path.basename(dir)}/${file}`,
+            url: `/img/${path.basename(dir)}/${file}`,
+            directory: path.basename(dir),
+            type: path.extname(file).substring(1),
+            size: stats.size,
+            created_at: stats.birthtime.toISOString()
+          });
+        }
+      });
+    }
+  });
+  
+  return mediaFiles;
 }
 
 module.exports = {
@@ -171,5 +243,6 @@ module.exports = {
   saveData,
   generateId,
   handleImageUpload,
-  countMediaFiles
+  countMediaFiles,
+  getMediaFiles
 };

@@ -10,18 +10,24 @@ const {
   generateId, 
   handleImageUpload,
   countMediaFiles,
+  getMediaFiles,
   RECIPES_FILE,
   COMMENTS_FILE,
   USERS_FILE,
   ABOUT_FILE
 } = require('../utils/fileUtil');
-const { verifyUser, generateToken, authMiddleware } = require('../utils/authUtil');
+const { 
+  verifyUser, 
+  generateToken, 
+  authMiddleware,
+  adminMiddleware
+} = require('../utils/authUtil');
 
 /**
- * POST /admin-connector?action=login
+ * POST /admin-api/auth/login
  * Handle admin login
  */
-router.post('/login', (req, res) => {
+router.post('/auth/login', (req, res) => {
   const { username, password } = req.body;
   
   // Validate required fields
@@ -55,22 +61,21 @@ router.post('/login', (req, res) => {
 });
 
 /**
- * GET /admin-connector?action=logout
- * Handle admin logout
+ * GET /admin-api/auth/verify
+ * Verify authentication token
  */
-router.get('/logout', (req, res) => {
-  // In a token-based auth system, the client should invalidate the token
-  res.json({ 
-    success: true, 
-    message: 'Logout successful' 
+router.get('/auth/verify', authMiddleware, (req, res) => {
+  res.json({
+    success: true,
+    user: req.user
   });
 });
 
 /**
- * GET /admin-connector?action=dashboard_stats
+ * GET /admin-api/dashboard/stats
  * Get dashboard statistics
  */
-router.get('/dashboard_stats', authMiddleware, (req, res) => {
+router.get('/dashboard/stats', authMiddleware, adminMiddleware, (req, res) => {
   // Load data
   const recipes = loadData(RECIPES_FILE);
   const comments = loadData(COMMENTS_FILE);
@@ -138,12 +143,12 @@ router.get('/dashboard_stats', authMiddleware, (req, res) => {
 });
 
 /**
- * GET /admin-connector?action=get_recipes
+ * GET /admin-api/recipes
  * Get all recipes for admin panel
  */
-router.get('/get_recipes', authMiddleware, (req, res) => {
+router.get('/recipes', authMiddleware, adminMiddleware, (req, res) => {
   // Get request parameters
-  const { status, page = 1, per_page = 10 } = req.query;
+  const { status = 'all', page = 1, per_page = 10 } = req.query;
   
   // Load recipes
   let recipes = loadData(RECIPES_FILE);
@@ -153,7 +158,7 @@ router.get('/get_recipes', authMiddleware, (req, res) => {
     recipes = recipes.filter(recipe => recipe.status === status);
   }
   
-  // Sort by date
+  // Sort by date (newest first)
   recipes.sort((a, b) => {
     const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
     const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
@@ -181,11 +186,11 @@ router.get('/get_recipes', authMiddleware, (req, res) => {
 });
 
 /**
- * GET /admin-connector?action=get_recipe
+ * GET /admin-api/recipes/:id
  * Get a specific recipe for admin panel
  */
-router.get('/get_recipe', authMiddleware, (req, res) => {
-  const { id } = req.query;
+router.get('/recipes/:id', authMiddleware, adminMiddleware, (req, res) => {
+  const { id } = req.params;
   
   // Check if ID is provided
   if (!id) {
@@ -212,12 +217,259 @@ router.get('/get_recipe', authMiddleware, (req, res) => {
 });
 
 /**
- * GET /admin-connector?action=get_comments
+ * POST /admin-api/recipes
+ * Add a new recipe
+ */
+router.post('/recipes', authMiddleware, adminMiddleware, (req, res) => {
+  const { 
+    title, intro, categories = [], tags = [], 
+    prep_time, cook_time, servings, 
+    ingredients = [], steps = [], notes, 
+    status = 'draft' 
+  } = req.body;
+  
+  // Validate required fields
+  if (!title) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Title is required' 
+    });
+  }
+  
+  // Handle image upload
+  let image = '';
+  if (req.files && req.files.image) {
+    image = handleImageUpload(req.files.image, 'recipes');
+    if (!image) {
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Failed to upload image' 
+      });
+    }
+  }
+  
+  // Parse tags if provided as string
+  let parsedTags = tags;
+  if (typeof tags === 'string') {
+    try {
+      parsedTags = JSON.parse(tags);
+    } catch (e) {
+      parsedTags = tags.split(',').map(tag => tag.trim());
+    }
+  }
+  
+  // Create recipe data
+  const recipe = {
+    id: generateId(),
+    title,
+    intro: intro || '',
+    image,
+    categories: Array.isArray(categories) ? categories : [categories].filter(Boolean),
+    tags: Array.isArray(parsedTags) ? parsedTags : [parsedTags].filter(Boolean),
+    prep_time: prep_time || '',
+    cook_time: cook_time || '',
+    servings: servings || '',
+    ingredients: Array.isArray(ingredients) ? ingredients : [ingredients].filter(Boolean),
+    steps: Array.isArray(steps) ? steps : [steps].filter(Boolean),
+    notes: notes || '',
+    status,
+    views: 0,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+  
+  // Load existing recipes
+  const recipes = loadData(RECIPES_FILE);
+  
+  // Add new recipe
+  recipes.push(recipe);
+  
+  // Save recipes
+  if (saveData(RECIPES_FILE, recipes)) {
+    res.json({ 
+      success: true, 
+      message: 'Recipe added successfully', 
+      data: recipe 
+    });
+  } else {
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to save recipe' 
+    });
+  }
+});
+
+/**
+ * PUT /admin-api/recipes/:id
+ * Update a recipe
+ */
+router.put('/recipes/:id', authMiddleware, adminMiddleware, (req, res) => {
+  const recipeId = req.params.id;
+  
+  // Check if ID is provided
+  if (!recipeId) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Recipe ID is required' 
+    });
+  }
+  
+  const { 
+    title, intro, categories = [], tags = [], 
+    prep_time, cook_time, servings, 
+    ingredients = [], steps = [], notes, 
+    status = 'draft' 
+  } = req.body;
+  
+  // Validate required fields
+  if (!title) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Title is required' 
+    });
+  }
+  
+  // Load existing recipes
+  const recipes = loadData(RECIPES_FILE);
+  
+  // Find recipe index
+  const recipeIndex = recipes.findIndex(recipe => recipe.id === recipeId);
+  
+  if (recipeIndex === -1) {
+    return res.status(404).json({ 
+      success: false, 
+      error: 'Recipe not found' 
+    });
+  }
+  
+  // Handle image upload
+  let image = recipes[recipeIndex].image || '';
+  if (req.files && req.files.image) {
+    const newImage = handleImageUpload(req.files.image, 'recipes');
+    if (newImage) {
+      // Delete old image if it exists
+      if (image) {
+        const oldImagePath = path.join(__dirname, '../../public/img/recipes', image);
+        try {
+          if (fs.existsSync(oldImagePath)) {
+            fs.unlinkSync(oldImagePath);
+          }
+        } catch (error) {
+          console.error('Error deleting old image:', error);
+        }
+      }
+      image = newImage;
+    }
+  }
+  
+  // Parse tags if provided as string
+  let parsedTags = tags;
+  if (typeof tags === 'string') {
+    try {
+      parsedTags = JSON.parse(tags);
+    } catch (e) {
+      parsedTags = tags.split(',').map(tag => tag.trim());
+    }
+  }
+  
+  // Update recipe data
+  recipes[recipeIndex] = {
+    ...recipes[recipeIndex],
+    title,
+    intro: intro || '',
+    image,
+    categories: Array.isArray(categories) ? categories : [categories].filter(Boolean),
+    tags: Array.isArray(parsedTags) ? parsedTags : [parsedTags].filter(Boolean),
+    prep_time: prep_time || '',
+    cook_time: cook_time || '',
+    servings: servings || '',
+    ingredients: Array.isArray(ingredients) ? ingredients : [ingredients].filter(Boolean),
+    steps: Array.isArray(steps) ? steps : [steps].filter(Boolean),
+    notes: notes || '',
+    status,
+    updated_at: new Date().toISOString()
+  };
+  
+  // Save recipes
+  if (saveData(RECIPES_FILE, recipes)) {
+    res.json({ 
+      success: true, 
+      message: 'Recipe updated successfully', 
+      data: recipes[recipeIndex] 
+    });
+  } else {
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to update recipe' 
+    });
+  }
+});
+
+/**
+ * DELETE /admin-api/recipes/:id
+ * Delete a recipe
+ */
+router.delete('/recipes/:id', authMiddleware, adminMiddleware, (req, res) => {
+  const recipeId = req.params.id;
+  
+  // Check if ID is provided
+  if (!recipeId) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Recipe ID is required' 
+    });
+  }
+  
+  // Load recipes
+  const recipes = loadData(RECIPES_FILE);
+  
+  // Find recipe index
+  const recipeIndex = recipes.findIndex(recipe => recipe.id === recipeId);
+  
+  if (recipeIndex === -1) {
+    return res.status(404).json({ 
+      success: false, 
+      error: 'Recipe not found' 
+    });
+  }
+  
+  // Delete recipe image if it exists
+  const image = recipes[recipeIndex].image;
+  if (image) {
+    const imagePath = path.join(__dirname, '../../public/img/recipes', image);
+    try {
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    } catch (error) {
+      console.error('Error deleting recipe image:', error);
+    }
+  }
+  
+  // Remove recipe
+  recipes.splice(recipeIndex, 1);
+  
+  // Save recipes
+  if (saveData(RECIPES_FILE, recipes)) {
+    res.json({ 
+      success: true, 
+      message: 'Recipe deleted successfully' 
+    });
+  } else {
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to delete recipe' 
+    });
+  }
+});
+
+/**
+ * GET /admin-api/comments
  * Get all comments for admin panel
  */
-router.get('/get_comments', authMiddleware, (req, res) => {
+router.get('/comments', authMiddleware, adminMiddleware, (req, res) => {
   // Get request parameters
-  const { status, page = 1, per_page = 10 } = req.query;
+  const { status = 'all', page = 1, per_page = 10 } = req.query;
   
   // Load comments
   let comments = loadData(COMMENTS_FILE);
@@ -227,7 +479,7 @@ router.get('/get_comments', authMiddleware, (req, res) => {
     comments = comments.filter(comment => comment.status === status);
   }
   
-  // Sort by date
+  // Sort by date (newest first)
   comments.sort((a, b) => {
     const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
     const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
@@ -270,40 +522,319 @@ router.get('/get_comments', authMiddleware, (req, res) => {
 });
 
 /**
- * GET /admin-connector?action=get_about
- * Get about page data
+ * GET /admin-api/comments/:id
+ * Get a specific comment
  */
-router.get('/get_about', (req, res) => {
-  // Load about page data
-  const about = loadData(ABOUT_FILE);
+router.get('/comments/:id', authMiddleware, adminMiddleware, (req, res) => {
+  const { id } = req.params;
   
-  if (!about || Object.keys(about).length === 0) {
-    // Return empty data structure
-    const emptyAbout = {
-      title: '',
-      subtitle: '',
-      image: '',
-      intro: '',
-      sections: [],
-      email: '',
-      social: {
-        facebook: '',
-        instagram: '',
-        pinterest: ''
-      }
-    };
-    
-    res.json({ success: true, data: emptyAbout });
+  // Check if ID is provided
+  if (!id) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Comment ID is required' 
+    });
+  }
+  
+  // Load comments
+  const comments = loadData(COMMENTS_FILE);
+  
+  // Find comment
+  const comment = comments.find(c => c.id === id);
+  
+  if (!comment) {
+    return res.status(404).json({ 
+      success: false, 
+      error: 'Comment not found' 
+    });
+  }
+  
+  // Add recipe title
+  const recipes = loadData(RECIPES_FILE);
+  if (comment.recipe_id) {
+    const recipe = recipes.find(r => r.id === comment.recipe_id);
+    if (recipe) {
+      comment.recipe_title = recipe.title;
+    } else {
+      comment.recipe_title = 'Unknown Recipe';
+    }
   } else {
-    res.json({ success: true, data: about });
+    comment.recipe_title = 'Unknown Recipe';
+  }
+  
+  res.json({ 
+    success: true, 
+    data: comment 
+  });
+});
+
+/**
+ * PUT /admin-api/comments/:id
+ * Update a comment
+ */
+router.put('/comments/:id', authMiddleware, adminMiddleware, (req, res) => {
+  const commentId = req.params.id;
+  const { author, email, content, status } = req.body;
+  
+  // Check if ID is provided
+  if (!commentId) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Comment ID is required' 
+    });
+  }
+  
+  // Validate required fields
+  if (!content) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Comment content is required' 
+    });
+  }
+  
+  // Load comments
+  const comments = loadData(COMMENTS_FILE);
+  
+  // Find comment index
+  const commentIndex = comments.findIndex(c => c.id === commentId);
+  
+  if (commentIndex === -1) {
+    return res.status(404).json({ 
+      success: false, 
+      error: 'Comment not found' 
+    });
+  }
+  
+  // Update comment
+  comments[commentIndex] = {
+    ...comments[commentIndex],
+    author: author || comments[commentIndex].author,
+    email: email || comments[commentIndex].email,
+    content,
+    status: status || comments[commentIndex].status,
+    updated_at: new Date().toISOString()
+  };
+  
+  // Save comments
+  if (saveData(COMMENTS_FILE, comments)) {
+    res.json({ 
+      success: true, 
+      message: 'Comment updated successfully', 
+      data: comments[commentIndex] 
+    });
+  } else {
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to update comment' 
+    });
   }
 });
 
 /**
- * POST /admin-connector?action=update_about
+ * DELETE /admin-api/comments/:id
+ * Delete a comment
+ */
+router.delete('/comments/:id', authMiddleware, adminMiddleware, (req, res) => {
+  const commentId = req.params.id;
+  
+  // Check if ID is provided
+  if (!commentId) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Comment ID is required' 
+    });
+  }
+  
+  // Load comments
+  const comments = loadData(COMMENTS_FILE);
+  
+  // Find comment index
+  const commentIndex = comments.findIndex(c => c.id === commentId);
+  
+  if (commentIndex === -1) {
+    return res.status(404).json({ 
+      success: false, 
+      error: 'Comment not found' 
+    });
+  }
+  
+  // Remove comment
+  comments.splice(commentIndex, 1);
+  
+  // Save comments
+  if (saveData(COMMENTS_FILE, comments)) {
+    res.json({ 
+      success: true, 
+      message: 'Comment deleted successfully' 
+    });
+  } else {
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to delete comment' 
+    });
+  }
+});
+
+/**
+ * GET /admin-api/media
+ * Get media files
+ */
+router.get('/media', authMiddleware, adminMiddleware, (req, res) => {
+  const { type = 'all', page = 1, per_page = 18 } = req.query;
+  
+  // Get all media files
+  const mediaFiles = getMediaFiles(type);
+  
+  // Sort by date (newest first)
+  mediaFiles.sort((a, b) => {
+    const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
+    const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
+    return dateB - dateA;
+  });
+  
+  // Pagination
+  const pageNum = parseInt(page);
+  const perPage = parseInt(per_page);
+  const totalFiles = mediaFiles.length;
+  const totalPages = Math.ceil(totalFiles / perPage);
+  const offset = (pageNum - 1) * perPage;
+  const paginatedFiles = mediaFiles.slice(offset, offset + perPage);
+  
+  res.json({
+    success: true,
+    data: paginatedFiles,
+    meta: {
+      page: pageNum,
+      per_page: perPage,
+      total: totalFiles,
+      pages: totalPages
+    }
+  });
+});
+
+/**
+ * POST /admin-api/media
+ * Upload media files
+ */
+router.post('/media', authMiddleware, adminMiddleware, (req, res) => {
+  // Check if files are uploaded
+  if (!req.files || !req.files.files) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'No files uploaded' 
+    });
+  }
+  
+  // Get upload type
+  const type = req.body.type || 'gallery';
+  
+  // Handle multiple files
+  const uploadedFiles = [];
+  const errors = [];
+  
+  // Convert to array if single file
+  const files = Array.isArray(req.files.files) ? req.files.files : [req.files.files];
+  
+  files.forEach(file => {
+    // Check file type
+    if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.mimetype)) {
+      errors.push(`Invalid file type: ${file.name}`);
+      return;
+    }
+    
+    // Handle file upload
+    const filename = handleImageUpload(file, type);
+    
+    if (filename) {
+      uploadedFiles.push({
+        name: file.name,
+        path: `${type}/${filename}`,
+        url: `/img/${type}/${filename}`,
+        directory: type,
+        size: file.size,
+        type: file.mimetype
+      });
+    } else {
+      errors.push(`Failed to move uploaded file: ${file.name}`);
+    }
+  });
+  
+  // Check if any files were uploaded
+  if (uploadedFiles.length === 0) {
+    res.status(400).json({ 
+      success: false, 
+      error: 'No files were uploaded', 
+      errors 
+    });
+  } else {
+    res.json({ 
+      success: true, 
+      message: 'Files uploaded successfully', 
+      data: uploadedFiles, 
+      errors 
+    });
+  }
+});
+
+/**
+ * DELETE /admin-api/media/:directory/:filename
+ * Delete media file
+ */
+router.delete('/media/:directory/:filename', authMiddleware, adminMiddleware, (req, res) => {
+  const { directory, filename } = req.params;
+  
+  if (!directory || !filename) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Directory and filename are required' 
+    });
+  }
+  
+  // Check if file exists
+  const filePath = path.join(__dirname, `../../public/img/${directory}`, filename);
+  
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ 
+      success: false, 
+      error: 'File not found' 
+    });
+  }
+  
+  // Delete file
+  try {
+    fs.unlinkSync(filePath);
+    res.json({ 
+      success: true, 
+      message: 'File deleted successfully' 
+    });
+  } catch (error) {
+    console.error('Error deleting file:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to delete file' 
+    });
+  }
+});
+
+/**
+ * GET /admin-api/about
+ * Get about page data
+ */
+router.get('/about', authMiddleware, adminMiddleware, (req, res) => {
+  // Load about page data
+  const about = loadData(ABOUT_FILE);
+  
+  res.json({ 
+    success: true, 
+    data: about 
+  });
+});
+
+/**
+ * PUT /admin-api/about
  * Update about page data
  */
-router.post('/update_about', authMiddleware, (req, res) => {
+router.put('/about', authMiddleware, adminMiddleware, (req, res) => {
   const { 
     title = '', subtitle = '', intro = '', 
     section_titles = [], section_contents = [], 
@@ -339,20 +870,17 @@ router.post('/update_about', authMiddleware, (req, res) => {
   
   // Create sections array
   const sections = [];
-  if (Array.isArray(section_titles)) {
-    for (let i = 0; i < section_titles.length; i++) {
-      if (section_titles[i]) {
-        sections.push({
-          title: section_titles[i],
-          content: section_contents[i] || ''
-        });
-      }
+  // Handle both array and single value cases
+  const titlesArray = Array.isArray(section_titles) ? section_titles : [section_titles];
+  const contentsArray = Array.isArray(section_contents) ? section_contents : [section_contents];
+  
+  for (let i = 0; i < titlesArray.length; i++) {
+    if (titlesArray[i]) {
+      sections.push({
+        title: titlesArray[i],
+        content: contentsArray[i] || ''
+      });
     }
-  } else if (section_titles) {
-    sections.push({
-      title: section_titles,
-      content: section_contents || ''
-    });
   }
   
   // Update about data
@@ -382,234 +910,6 @@ router.post('/update_about', authMiddleware, (req, res) => {
     res.status(500).json({ 
       success: false, 
       error: 'Failed to update about page' 
-    });
-  }
-});
-
-/**
- * GET /admin-connector?action=get_media
- * Get media files
- */
-router.get('/get_media', authMiddleware, (req, res) => {
-  const { type = 'all', page = 1, per_page = 18 } = req.query;
-  
-  // Get files from uploads directory
-  const mediaFiles = [];
-  
-  // Base uploads directory
-  const uploadsDir = path.join(__dirname, '../../public/img');
-  
-  // Directories to scan based on type
-  const dirsToScan = [];
-  
-  if (type === 'all') {
-    // Scan all directories
-    dirsToScan.push(uploadsDir);
-    
-    // Add subdirectories
-    const subdirs = fs.readdirSync(uploadsDir)
-      .filter(file => {
-        const filePath = path.join(uploadsDir, file);
-        return fs.statSync(filePath).isDirectory();
-      })
-      .map(dir => path.join(uploadsDir, dir));
-    
-    dirsToScan.push(...subdirs);
-  } else if (type === 'recipe' && fs.existsSync(path.join(uploadsDir, 'recipes'))) {
-    dirsToScan.push(path.join(uploadsDir, 'recipes'));
-  } else if (type === 'gallery' && fs.existsSync(path.join(uploadsDir, 'gallery'))) {
-    dirsToScan.push(path.join(uploadsDir, 'gallery'));
-  } else {
-    return res.status(400).json({ 
-      success: false, 
-      error: 'Invalid media type' 
-    });
-  }
-  
-  // Scan directories
-  dirsToScan.forEach(dir => {
-    if (fs.existsSync(dir)) {
-      const files = fs.readdirSync(dir)
-        .filter(file => {
-          const ext = path.extname(file).toLowerCase();
-          return ['.jpg', '.jpeg', '.png', '.gif'].includes(ext);
-        });
-      
-      files.forEach(file => {
-        const filePath = path.join(dir, file);
-        const stats = fs.statSync(filePath);
-        
-        mediaFiles.push({
-          id: file,
-          name: file,
-          path: filePath.replace(path.join(__dirname, '../../public'), ''),
-          type: path.extname(file).substring(1),
-          size: stats.size,
-          created_at: stats.birthtime.toISOString()
-        });
-      });
-    }
-  });
-  
-  // Sort by date
-  mediaFiles.sort((a, b) => {
-    const dateA = new Date(a.created_at);
-    const dateB = new Date(b.created_at);
-    return dateB - dateA;
-  });
-  
-  // Pagination
-  const pageNum = parseInt(page);
-  const perPage = parseInt(per_page);
-  const totalFiles = mediaFiles.length;
-  const totalPages = Math.ceil(totalFiles / perPage);
-  const offset = (pageNum - 1) * perPage;
-  const paginatedFiles = mediaFiles.slice(offset, offset + perPage);
-  
-  res.json({
-    success: true,
-    data: paginatedFiles,
-    meta: {
-      page: pageNum,
-      per_page: perPage,
-      total: totalFiles,
-      pages: totalPages
-    }
-  });
-});
-
-/**
- * POST /admin-connector?action=upload_media
- * Upload media files
- */
-router.post('/upload_media', authMiddleware, (req, res) => {
-  // Check if files are uploaded
-  if (!req.files || !req.files.files) {
-    return res.status(400).json({ 
-      success: false, 
-      error: 'No files uploaded' 
-    });
-  }
-  
-  // Get upload type
-  const type = req.body.type || 'gallery';
-  
-  // Upload directory
-  const uploadDir = path.join(__dirname, '../../public/img', type);
-  
-  // Create directory if it doesn't exist
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
-  
-  // Handle multiple files
-  const uploadedFiles = [];
-  const errors = [];
-  
-  // Convert to array if single file
-  const files = Array.isArray(req.files.files) ? req.files.files : [req.files.files];
-  
-  files.forEach(file => {
-    // Check file type
-    if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.mimetype)) {
-      errors.push(`Invalid file type: ${file.name}`);
-      return;
-    }
-    
-    // Generate unique filename
-    const ext = path.extname(file.name);
-    const filename = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}${ext}`;
-    const filePath = path.join(uploadDir, filename);
-    
-    // Move file
-    try {
-      file.mv(filePath);
-      
-      uploadedFiles.push({
-        name: file.name,
-        path: filePath.replace(path.join(__dirname, '../../public'), ''),
-        size: file.size,
-        type: file.mimetype
-      });
-    } catch (error) {
-      console.error('Error moving file:', error);
-      errors.push(`Failed to move uploaded file: ${file.name}`);
-    }
-  });
-  
-  // Check if any files were uploaded
-  if (uploadedFiles.length === 0) {
-    res.status(400).json({ 
-      success: false, 
-      error: 'No files were uploaded', 
-      errors 
-    });
-  } else {
-    res.json({ 
-      success: true, 
-      message: 'Files uploaded successfully', 
-      data: uploadedFiles, 
-      errors 
-    });
-  }
-});
-
-/**
- * DELETE /admin-connector?action=delete_media
- * Delete media file
- */
-router.delete('/delete_media', authMiddleware, (req, res) => {
-  const { filename } = req.body;
-  
-  if (!filename) {
-    return res.status(400).json({ 
-      success: false, 
-      error: 'Filename is required' 
-    });
-  }
-  
-  // Check if file exists
-  const uploadsDir = path.join(__dirname, '../../public/img');
-  let filePath = path.join(uploadsDir, filename);
-  let found = fs.existsSync(filePath);
-  
-  // Check in subdirectories if not found
-  if (!found) {
-    const subdirs = fs.readdirSync(uploadsDir)
-      .filter(file => {
-        const dirPath = path.join(uploadsDir, file);
-        return fs.statSync(dirPath).isDirectory();
-      });
-    
-    for (const dir of subdirs) {
-      const subFilePath = path.join(uploadsDir, dir, filename);
-      if (fs.existsSync(subFilePath)) {
-        filePath = subFilePath;
-        found = true;
-        break;
-      }
-    }
-  }
-  
-  if (!found) {
-    return res.status(404).json({ 
-      success: false, 
-      error: 'File not found' 
-    });
-  }
-  
-  // Delete file
-  try {
-    fs.unlinkSync(filePath);
-    res.json({ 
-      success: true, 
-      message: 'File deleted successfully' 
-    });
-  } catch (error) {
-    console.error('Error deleting file:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to delete file' 
     });
   }
 });

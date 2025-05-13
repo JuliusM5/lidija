@@ -3,27 +3,42 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
+const fs = require('fs');
 const { 
   loadData, 
   saveData, 
-  generateId, 
-  handleImageUpload, 
   RECIPES_FILE,
   COMMENTS_FILE 
 } = require('../utils/fileUtil');
-const { authMiddleware } = require('../utils/authUtil');
+
+/**
+ * Helper function to create URL-friendly slugs
+ * @param {string} text - Text to slugify
+ * @returns {string} - URL-friendly slug
+ */
+function slugify(text) {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')        // Replace spaces with -
+    .replace(/[^\w\-]+/g, '')    // Remove all non-word chars
+    .replace(/\-\-+/g, '-')      // Replace multiple - with single -
+    .replace(/^-+/, '')          // Trim - from start of text
+    .replace(/-+$/, '');         // Trim - from end of text
+}
 
 /**
  * GET /api/recipes
  * Get recipes with optional filters (featured, latest, popular)
  */
 router.get('/', (req, res) => {
-  const { id, featured, latest, popular, offset, limit } = req.query;
+  const { id, slug, featured, latest, popular, offset = 0, limit = 6 } = req.query;
   
   // If ID is provided, return a specific recipe
   if (id) {
     const recipes = loadData(RECIPES_FILE);
-    const recipe = recipes.find(r => r.id === id);
+    const recipe = recipes.find(r => r.id === id && r.status === 'published');
     
     if (recipe) {
       // Load comments for this recipe
@@ -34,6 +49,38 @@ router.get('/', (req, res) => {
       
       // Add comments to recipe
       recipe.comments = recipeComments;
+      
+      // Increment view count (optional)
+      recipe.views = (recipe.views || 0) + 1;
+      saveData(RECIPES_FILE, recipes);
+      
+      return res.json({ success: true, recipe });
+    } else {
+      return res.status(404).json({ success: false, error: 'Recipe not found' });
+    }
+  }
+  
+  // If slug is provided, return a specific recipe
+  if (slug) {
+    const recipes = loadData(RECIPES_FILE);
+    const recipe = recipes.find(r => 
+      (r.slug === slug || slugify(r.title) === slug) && 
+      r.status === 'published'
+    );
+    
+    if (recipe) {
+      // Load comments for this recipe
+      const comments = loadData(COMMENTS_FILE);
+      const recipeComments = comments.filter(comment => 
+        comment.recipe_id === recipe.id && comment.status === 'approved'
+      );
+      
+      // Add comments to recipe
+      recipe.comments = recipeComments;
+      
+      // Increment view count (optional)
+      recipe.views = (recipe.views || 0) + 1;
+      saveData(RECIPES_FILE, recipes);
       
       return res.json({ success: true, recipe });
     } else {
@@ -62,8 +109,9 @@ router.get('/', (req, res) => {
       return dateB - dateA;
     });
     
-    // Limit to 5 latest recipes
-    recipes = recipes.slice(0, 5);
+    // Limit to 5 latest recipes, or the value specified in limit
+    const latestLimit = parseInt(limit) || 5;
+    recipes = recipes.slice(0, latestLimit);
   }
   
   if (popular === '1' || popular === 'true') {
@@ -74,13 +122,14 @@ router.get('/', (req, res) => {
       return viewsB - viewsA;
     });
     
-    // Limit to 3 popular recipes
-    recipes = recipes.slice(0, 3);
+    // Limit to 3 popular recipes, or the value specified in limit
+    const popularLimit = parseInt(limit) || 3;
+    recipes = recipes.slice(0, popularLimit);
   }
   
   // Apply pagination
-  const paginationOffset = parseInt(offset) || 0;
-  const paginationLimit = parseInt(limit) || 6;
+  const paginationOffset = parseInt(offset);
+  const paginationLimit = parseInt(limit);
   const totalRecipes = recipes.length;
   const paginatedRecipes = recipes.slice(paginationOffset, paginationOffset + paginationLimit);
   
@@ -93,187 +142,177 @@ router.get('/', (req, res) => {
 });
 
 /**
- * POST /api/recipes
- * Add a new recipe (protected route)
+ * GET /api/recipes/search
+ * Search recipes by query
  */
-router.post('/', authMiddleware, (req, res) => {
-  const { 
-    title, intro, categories = [], tags = [], 
-    prep_time, cook_time, servings, 
-    ingredients = [], steps = [], notes, 
-    status = 'draft' 
-  } = req.body;
+router.get('/search', (req, res) => {
+  const { q, offset = 0, limit = 6 } = req.query;
   
-  // Validate required fields
-  if (!title) {
-    return res.status(400).json({ success: false, error: 'Title is required' });
+  if (!q) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Search query is required' 
+    });
   }
   
-  // Handle image upload
-  let image = '';
-  if (req.files && req.files.image) {
-    image = handleImageUpload(req.files.image, 'recipes');
-    if (!image) {
-      return res.status(500).json({ success: false, error: 'Failed to upload image' });
+  // Load published recipes
+  let recipes = loadData(RECIPES_FILE).filter(recipe => 
+    recipe.status === 'published'
+  );
+  
+  // Search in title, intro, ingredients, and steps
+  const query = q.toLowerCase();
+  const searchResults = recipes.filter(recipe => {
+    const titleMatch = recipe.title?.toLowerCase().includes(query);
+    const introMatch = recipe.intro?.toLowerCase().includes(query);
+    
+    // Search in ingredients
+    const ingredientsMatch = recipe.ingredients?.some(ingredient => 
+      ingredient.toLowerCase().includes(query)
+    );
+    
+    // Search in steps
+    const stepsMatch = recipe.steps?.some(step => 
+      step.toLowerCase().includes(query)
+    );
+    
+    // Search in categories and tags
+    const categoriesMatch = recipe.categories?.some(category => 
+      category.toLowerCase().includes(query)
+    );
+    
+    const tagsMatch = recipe.tags?.some(tag => 
+      tag.toLowerCase().includes(query)
+    );
+    
+    return titleMatch || introMatch || ingredientsMatch || stepsMatch || categoriesMatch || tagsMatch;
+  });
+  
+  // Sort by relevance (title match first, then intro, etc.)
+  searchResults.sort((a, b) => {
+    const aTitleMatch = a.title?.toLowerCase().includes(query) ? 1 : 0;
+    const bTitleMatch = b.title?.toLowerCase().includes(query) ? 1 : 0;
+    
+    // First sort by title match
+    if (aTitleMatch !== bTitleMatch) {
+      return bTitleMatch - aTitleMatch;
     }
-  }
+    
+    // Then by date (newest first)
+    const aDate = a.created_at ? new Date(a.created_at) : new Date(0);
+    const bDate = b.created_at ? new Date(b.created_at) : new Date(0);
+    return bDate - aDate;
+  });
   
-  // Create recipe data
-  const recipe = {
-    id: generateId(),
-    title,
-    intro: intro || '',
-    image,
-    categories: Array.isArray(categories) ? categories : [categories].filter(Boolean),
-    tags: Array.isArray(tags) ? tags : JSON.parse(tags || '[]'),
-    prep_time: prep_time || '',
-    cook_time: cook_time || '',
-    servings: servings || '',
-    ingredients: Array.isArray(ingredients) ? ingredients : [ingredients].filter(Boolean),
-    steps: Array.isArray(steps) ? steps : [steps].filter(Boolean),
-    notes: notes || '',
-    status,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  };
+  // Apply pagination
+  const paginationOffset = parseInt(offset);
+  const paginationLimit = parseInt(limit);
+  const totalResults = searchResults.length;
+  const paginatedResults = searchResults.slice(paginationOffset, paginationOffset + paginationLimit);
   
-  // Load existing recipes
-  const recipes = loadData(RECIPES_FILE);
-  
-  // Add new recipe
-  recipes.push(recipe);
-  
-  // Save recipes
-  if (saveData(RECIPES_FILE, recipes)) {
-    res.json({ success: true, message: 'Recipe added successfully', data: recipe });
-  } else {
-    res.status(500).json({ success: false, error: 'Failed to save recipe' });
-  }
+  res.json({
+    success: true,
+    recipes: paginatedResults,
+    total: totalResults,
+    hasMore: (paginationOffset + paginationLimit) < totalResults
+  });
 });
 
 /**
- * PUT /api/recipes/:id
- * Update a recipe (protected route)
+ * GET /api/recipes/recent-comments
+ * Get recipes with recent comments
  */
-router.put('/:id', authMiddleware, (req, res) => {
-  const recipeId = req.params.id;
+router.get('/recent-comments', (req, res) => {
+  const { limit = 5 } = req.query;
   
-  // Check if ID is provided
-  if (!recipeId) {
-    return res.status(400).json({ success: false, error: 'Recipe ID is required' });
-  }
+  // Load comments
+  const comments = loadData(COMMENTS_FILE);
   
-  const { 
-    title, intro, categories = [], tags = [], 
-    prep_time, cook_time, servings, 
-    ingredients = [], steps = [], notes, 
-    status = 'draft' 
-  } = req.body;
+  // Get approved comments, sorted by date (newest first)
+  const approvedComments = comments
+    .filter(comment => comment.status === 'approved')
+    .sort((a, b) => {
+      const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
+      const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
+      return dateB - dateA;
+    })
+    .slice(0, parseInt(limit));
   
-  // Validate required fields
-  if (!title) {
-    return res.status(400).json({ success: false, error: 'Title is required' });
-  }
-  
-  // Load existing recipes
+  // Load recipes to get titles
   const recipes = loadData(RECIPES_FILE);
   
-  // Find recipe index
-  const recipeIndex = recipes.findIndex(recipe => recipe.id === recipeId);
+  // Add recipe titles to comments
+  const commentWithRecipes = approvedComments.map(comment => {
+    const recipe = recipes.find(r => r.id === comment.recipe_id);
+    return {
+      ...comment,
+      recipe_title: recipe ? recipe.title : 'Unknown Recipe',
+      recipe_slug: recipe ? (recipe.slug || slugify(recipe.title)) : ''
+    };
+  });
   
-  if (recipeIndex === -1) {
-    return res.status(404).json({ success: false, error: 'Recipe not found' });
-  }
-  
-  // Handle image upload
-  let image = recipes[recipeIndex].image || '';
-  if (req.files && req.files.image) {
-    const newImage = handleImageUpload(req.files.image, 'recipes');
-    if (newImage) {
-      // Delete old image if it exists
-      if (image) {
-        const oldImagePath = path.join(__dirname, '../../public/img/recipes', image);
-        try {
-          if (fs.existsSync(oldImagePath)) {
-            fs.unlinkSync(oldImagePath);
-          }
-        } catch (error) {
-          console.error('Error deleting old image:', error);
-        }
-      }
-      image = newImage;
-    }
-  }
-  
-  // Update recipe data
-  recipes[recipeIndex] = {
-    ...recipes[recipeIndex],
-    title,
-    intro: intro || '',
-    image,
-    categories: Array.isArray(categories) ? categories : [categories].filter(Boolean),
-    tags: Array.isArray(tags) ? tags : JSON.parse(tags || '[]'),
-    prep_time: prep_time || '',
-    cook_time: cook_time || '',
-    servings: servings || '',
-    ingredients: Array.isArray(ingredients) ? ingredients : [ingredients].filter(Boolean),
-    steps: Array.isArray(steps) ? steps : [steps].filter(Boolean),
-    notes: notes || '',
-    status,
-    updated_at: new Date().toISOString()
-  };
-  
-  // Save recipes
-  if (saveData(RECIPES_FILE, recipes)) {
-    res.json({ success: true, message: 'Recipe updated successfully', data: recipes[recipeIndex] });
-  } else {
-    res.status(500).json({ success: false, error: 'Failed to update recipe' });
-  }
+  res.json({
+    success: true,
+    comments: commentWithRecipes
+  });
 });
 
 /**
- * DELETE /api/recipes/:id
- * Delete a recipe (protected route)
+ * POST /api/recipes/:id/comments
+ * Add a comment to a recipe
  */
-router.delete('/:id', authMiddleware, (req, res) => {
+router.post('/:id/comments', (req, res) => {
   const recipeId = req.params.id;
+  const { author, email, content, parent_id } = req.body;
   
-  // Check if ID is provided
-  if (!recipeId) {
-    return res.status(400).json({ success: false, error: 'Recipe ID is required' });
+  // Validate required fields
+  if (!author || !content) {
+    return res.status(400).json({
+      success: false,
+      error: 'Author and content are required'
+    });
   }
   
-  // Load recipes
+  // Check if recipe exists
   const recipes = loadData(RECIPES_FILE);
+  const recipe = recipes.find(r => r.id === recipeId);
   
-  // Find recipe index
-  const recipeIndex = recipes.findIndex(recipe => recipe.id === recipeId);
-  
-  if (recipeIndex === -1) {
-    return res.status(404).json({ success: false, error: 'Recipe not found' });
+  if (!recipe) {
+    return res.status(404).json({
+      success: false,
+      error: 'Recipe not found'
+    });
   }
   
-  // Delete recipe image if it exists
-  const image = recipes[recipeIndex].image;
-  if (image) {
-    const imagePath = path.join(__dirname, '../../public/img/recipes', image);
-    try {
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
-    } catch (error) {
-      console.error('Error deleting recipe image:', error);
-    }
-  }
+  // Load existing comments
+  const comments = loadData(COMMENTS_FILE);
   
-  // Remove recipe
-  recipes.splice(recipeIndex, 1);
+  // Create new comment
+  const newComment = {
+    id: Date.now().toString(),
+    recipe_id: recipeId,
+    parent_id: parent_id || null,
+    author,
+    email: email || '',
+    content,
+    status: 'pending', // New comments are pending until approved
+    created_at: new Date().toISOString()
+  };
   
-  // Save recipes
-  if (saveData(RECIPES_FILE, recipes)) {
-    res.json({ success: true, message: 'Recipe deleted successfully' });
+  // Add comment
+  comments.push(newComment);
+  
+  // Save comments
+  if (saveData(COMMENTS_FILE, comments)) {
+    res.json({
+      success: true,
+      message: 'Comment added successfully and will be visible after moderation'
+    });
   } else {
-    res.status(500).json({ success: false, error: 'Failed to delete recipe' });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to save comment'
+    });
   }
 });
 

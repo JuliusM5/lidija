@@ -2,8 +2,8 @@
 
 const express = require('express');
 const router = express.Router();
-const { loadData, saveData, generateId, COMMENTS_FILE } = require('../utils/fileUtil');
-const { authMiddleware } = require('../utils/authUtil');
+const { loadData, saveData, generateId, COMMENTS_FILE, RECIPES_FILE } = require('../utils/fileUtil');
+const { authMiddleware, adminMiddleware } = require('../utils/authUtil');
 
 /**
  * GET /api/comments
@@ -47,11 +47,63 @@ router.get('/', (req, res) => {
   // Add replies to their parent comments
   commentThreads.forEach(thread => {
     thread.replies = replies[thread.id] || [];
+    
+    // Sort replies by date (oldest first)
+    thread.replies.sort((a, b) => {
+      const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
+      const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
+      return dateA - dateB;
+    });
+  });
+  
+  // Sort top-level comments by date (newest first)
+  commentThreads.sort((a, b) => {
+    const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
+    const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
+    return dateB - dateA;
   });
   
   res.json({
     success: true,
     comments: commentThreads
+  });
+});
+
+/**
+ * GET /api/comments/recent
+ * Get recent comments
+ */
+router.get('/recent', (req, res) => {
+  const { limit = 5 } = req.query;
+  
+  // Load comments
+  const comments = loadData(COMMENTS_FILE);
+  
+  // Get approved comments, sorted by date (newest first)
+  const approvedComments = comments
+    .filter(comment => comment.status === 'approved')
+    .sort((a, b) => {
+      const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
+      const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
+      return dateB - dateA;
+    })
+    .slice(0, parseInt(limit));
+  
+  // Load recipes to get titles
+  const recipes = loadData(RECIPES_FILE);
+  
+  // Add recipe titles to comments
+  const commentsWithRecipes = approvedComments.map(comment => {
+    const recipe = recipes.find(r => r.id === comment.recipe_id);
+    return {
+      ...comment,
+      recipe_title: recipe ? recipe.title : 'Unknown Recipe'
+    };
+  });
+  
+  res.json({
+    success: true,
+    comments: commentsWithRecipes
   });
 });
 
@@ -68,6 +120,38 @@ router.post('/', (req, res) => {
       success: false,
       error: 'Recipe ID, author, and content are required'
     });
+  }
+  
+  // Check if recipe exists
+  const recipes = loadData(RECIPES_FILE);
+  const recipe = recipes.find(r => r.id === recipe_id);
+  
+  if (!recipe) {
+    return res.status(404).json({
+      success: false,
+      error: 'Recipe not found'
+    });
+  }
+  
+  // If parent_id is provided, check if it exists
+  if (parent_id) {
+    const comments = loadData(COMMENTS_FILE);
+    const parentComment = comments.find(c => c.id === parent_id);
+    
+    if (!parentComment) {
+      return res.status(404).json({
+        success: false,
+        error: 'Parent comment not found'
+      });
+    }
+    
+    // Ensure parent comment is for the same recipe
+    if (parentComment.recipe_id !== recipe_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Parent comment is for a different recipe'
+      });
+    }
   }
   
   // Create comment data
@@ -92,7 +176,7 @@ router.post('/', (req, res) => {
   if (saveData(COMMENTS_FILE, comments)) {
     res.json({
       success: true,
-      message: 'Comment added successfully'
+      message: 'Comment added successfully and will be visible after moderation'
     });
   } else {
     res.status(500).json({
@@ -104,9 +188,9 @@ router.post('/', (req, res) => {
 
 /**
  * PUT /api/comments/:id
- * Update a comment (protected route)
+ * Update a comment (admin only)
  */
-router.put('/:id', authMiddleware, (req, res) => {
+router.put('/:id', authMiddleware, adminMiddleware, (req, res) => {
   const commentId = req.params.id;
   const { author, email, content, status } = req.body;
   
@@ -158,9 +242,9 @@ router.put('/:id', authMiddleware, (req, res) => {
 
 /**
  * DELETE /api/comments/:id
- * Delete a comment (protected route)
+ * Delete a comment (admin only)
  */
-router.delete('/:id', authMiddleware, (req, res) => {
+router.delete('/:id', authMiddleware, adminMiddleware, (req, res) => {
   const commentId = req.params.id;
   
   // Validate required fields
