@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puslapis nerastas | Šaukštas Meilės</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!-- CSS files -->
+    <link rel="stylesheet" href="/css/normalize.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .error-container {
+            text-align: center;
+            padding: 100px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .error-code {
+            font-size: 8rem;
+            font-family: 'Playfair Display', serif;
+            color: #7f4937;
+            margin: 0;
+            line-height: 1;
+        }
+        
+        .error-message {
+            font-size: 2rem;
+            font-family: 'Playfair Display', serif;
+            color: #7f4937;
+            margin: 20px 0;
+        }
+        
+        .error-text {
+            font-size: 1.1rem;
+            color: #3d3d3d;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+        
+        .back-home {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #7f4937;
+            color: white;
+            text-decoration: none;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .back-home:hover {
+            background-color: #aa5f44;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1 class="site-title">Šaukštas Meilės</h1>
+        <p class="site-description">Skoniai iš gamtos, tylos ir švelnumo</p>
+        <nav>
+            <ul>
+                <li><a href="/">PAGRINDINIS</a></li>
+                <li class="dropdown">
+                    <a href="#">RECEPTAI</a>
+                    <div class="dropdown-content">
+                        <!-- Categories will be added via JavaScript -->
+                    </div>
+                </li>
+                <li><a href="/about">APIE MANE</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Error content -->
+    <div class="container error-container">
+        <h1 class="error-code">404</h1>
+        <h2 class="error-message">Puslapis nerastas</h2>
+        <p class="error-text">Atsiprašome, bet jūsų ieškomas puslapis neegzistuoja. Galbūt adresas buvo pakeistas arba puslapis buvo pašalintas.</p>
+        <a href="/" class="back-home">Grįžti į pagrindinį puslapį</a>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p class="footer-text">Šaukštas Meilės - naminiai lietuviški receptai su meile</p>
+            <div class="footer-links">
+                <a href="/">Pagrindinis</a>
+                <a href="#">Receptai</a>
+                <a href="/about">Apie mane</a>
+                <a href="/about#contact">Kontaktai</a>
+                <a href="/privacy">Privatumo politika</a>
+            </div>
+            <p class="copyright">© 2025 Šaukštas Meilės. Visos teisės saugomos.</p>
+        </div>
+    </footer>
+
+    <!-- Initialize categories dropdown -->
+    <script>
+        // Fetch categories for dropdown
+        fetch('/api/categories')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.categories) {
+                    const dropdown = document.querySelector('.dropdown-content');
+                    if (dropdown) {
+                        data.categories.forEach(category => {
+                            const link = document.createElement('a');
+                            link.href = `/?category=${encodeURIComponent(category.name)}`;
+                            link.textContent = category.name;
+                            dropdown.appendChild(link);
+                        });
+                    }
+                }
+            })
+            .catch(error => console.error('Error loading categories:', error));
+    </script>
+</body>
+</html>

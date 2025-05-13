@@ -16,3 +16,44 @@ _site/
 # counterproductive to check this file into the repository.
 # Details at https://github.com/github/pages-gem/issues/768
 Gemfile.lock
+# Node.js dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+.pnp/
+.pnp.js
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build files
+/build
+/dist
+
+# Data files (in production these should be managed differently)
+/server/data/*.json
+
+# Log files
+logs/
+*.log
+
+# Editor and OS files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Uploaded files (in production these should be stored elsewhere)
+/public/img/recipes/*
+/public/img/about/*
+/public/img/gallery/*
+!/public/img/recipes/.gitkeep
+!/public/img/about/.gitkeep
+!/public/img/gallery/.gitkeep

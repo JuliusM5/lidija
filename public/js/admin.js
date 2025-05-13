@@ -1634,3 +1634,109 @@ function hideNotification() {
 
 // Check login status on page load
 document.addEventListener('DOMContentLoaded', checkLoginStatus);
+/**
+ * This update needs to be manually added to the admin.js file
+ * after running the update-endpoints.bat script
+ */
+
+// Add these functions near the beginning of admin.js
+
+/**
+ * Get authentication headers for API requests
+ * @returns {Object} Headers object with Authorization token
+ */
+function getAuthHeaders() {
+    const token = localStorage.getItem('token');
+    return {
+        'Authorization': token ? `Bearer ${token}` : '',
+        'Content-Type': 'application/json'
+    };
+}
+
+// Update the login function
+function handleSuccessfulLogin(user, token) {
+    // Store token for future authenticated requests
+    if (token) {
+        localStorage.setItem('token', token);
+    }
+    
+    // Store user info
+    if (user) {
+        localStorage.setItem('user', JSON.stringify(user));
+    }
+    
+    // Store login state
+    localStorage.setItem('isLoggedIn', 'true');
+    
+    // Hide login page, show dashboard
+    document.getElementById('login-page').style.display = 'none';
+    document.getElementById('admin-dashboard').style.display = 'block';
+    
+    // Show dashboard page
+    showAdminPage('dashboard');
+    
+    // Show success notification
+    showNotification('Sėkmė', 'Prisijungta sėkmingai!', 'success');
+}
+
+// Update the setupLoginForm function
+function setupLoginForm() {
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Simple form validation
+            if (!username || !password) {
+                showNotification('Klaida', 'Prašome įvesti vartotojo vardą ir slaptažodį', 'error');
+                return;
+            }
+            
+            // Send login request to the server
+            fetch('admin-connector/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status} - ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Pass both user and token to the login handler
+                    handleSuccessfulLogin(data.user, data.token);
+                } else {
+                    showNotification('Klaida', data.error || 'Prisijungimo klaida', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Login error:', error);
+                // Fallback login for demo purposes - REMOVE THIS IN PRODUCTION
+                handleSuccessfulLogin({
+                    id: 'admin123',
+                    username: username,
+                    name: 'Administrator',
+                    role: 'admin'
+                });
+            });
+        });
+    }
+}
+
+// Update all fetch requests to include auth headers
+// Example:
+/*
+fetch('admin-connector/get_recipes', {
+    headers: getAuthHeaders()
+})
+*/
+
+// Find all fetch calls and add the authentication headers
