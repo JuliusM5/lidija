@@ -222,6 +222,35 @@
             height: 250px;
             object-fit: cover;
         }
+        
+        /* Local placeholder styling */
+        .local-placeholder {
+            max-width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 10px;
+            box-sizing: border-box;
+            font-family: 'Source Sans Pro', sans-serif;
+            overflow: hidden;
+            word-break: break-word;
+            background-color: #f8f5f1;
+            color: #7f4937;
+            border: 1px solid #e6ddd6;
+            border-radius: 0;
+            font-weight: normal;
+            line-height: 1.3;
+        }
+        
+        .local-placeholder span {
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 12px;
+            font-weight: normal;
+            color: #7f4937;
+            opacity: 0.7;
+            text-transform: none;
+        }
     </style>
 </head>
 <body>
@@ -266,8 +295,133 @@
             <!-- Main Column -->
             <div class="content-main">
                 <div class="about-page-main">
-                    <div id="about-content">
-                        <div class="loading">Kraunama...</div>
+                    <div class="about-header">
+                        <h1 class="about-title">Apie Mane</h1>
+                        <p class="about-subtitle">Kelionė į širdį per maistą, pilną gamtos dovanų, švelnumo ir paprastumo</p>
+                    </div>
+                    
+                    <div class="about-image">
+                        <div class="local-placeholder" style="width:100%;height:500px;">
+                            <span>Lidija miško takeliu</span>
+                        </div>
+                    </div>
+                    
+                    <p class="about-intro">Sveiki, esu Lidija – keliaujanti miško takeliais, pievomis ir laukais, kur kiekvienas žolės stiebelis, vėjo dvelksmas ar laukinė uoga tampa įkvėpimu naujam skoniui. Maisto gaminimas ir fotografija man – tai savotiška meditacija, leidžianti trumpam sustoti ir pasimėgauti akimirka šiandieniniame chaose.</p>
+                    
+                    <div class="about-content">
+                        <div class="about-section">
+                            <h2 class="about-section-title">Mano istorija</h2>
+                            <p>Viskas prasidėjo mažoje kaimo virtuvėje, kur mano močiutė Ona ruošdavo kvapnius patiekalus iš paprastų ingredientų. Stebėdavau, kaip jos rankos minkydavo tešlą, kaip ji lengvai ir gracingai sukosi tarp puodų ir keptuvių, kaip pasakodavo apie kiekvieną žolelę, kurią pridėdavo į sriubą ar arbatą.</p>
+                            
+                            <p>Baigusi mokyklą, persikėliau į Kauną studijuoti ir pradėjau kurti savo virtuvėje. Dirbau įvairiose maisto srityse – nuo restoranų iki maisto stilistikos žurnalams. Tačiau po ilgo laiko, praleisto mieste, pajutau poreikį grįžti prie savo šaknų, arčiau gamtos, arčiau tų paprastų, bet sodrių skonių, kurie lydėjo mano vaikystę.</p>
+                            
+                            <p>Taip ir atsirado mano kulinarinius eksperimentus apjungiantis projektas „Šaukštas Meilės". Šis tinklaraštis gimė iš noro pasidalinti maisto džiaugsmu, gamtos dovanotas receptais ir istorijomis, kurios supa kiekvieną patiekalą.</p>
+                            
+                            <div class="about-factbox">
+                                <h3>Trys įdomūs faktai apie mane</h3>
+                                <ul>
+                                    <li>Kiekvieną pavasarį praleidžiu bent savaitę miške, rinkdama laukines žoleles ir grybus, kuriuos vėliau naudoju savo receptuose.</li>
+                                    <li>Turiu kolekciją senų lietuviškų receptų knygų, kurių seniausiai yra virš 100 metų.</li>
+                                    <li>Kartą kepiau tortą Lietuvos prezidentūrai – tai buvo vienas didžiausių iššūkių mano kulinarinėje kelionėje!</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="about-section">
+                            <h2 class="about-section-title">Mano filosofija</h2>
+                            <p>Tikiu, kad maistas yra daugiau nei tik kuras mūsų kūnui – tai būdas sujungti žmones, išsaugoti tradicijas ir kurti naujus prisiminimus. Mano kulinarinė filosofija grindžiama trimis pagrindiniais principais:</p>
+                            
+                            <p><strong>Paprastumas.</strong> Geriausios receptų idėjos dažnai gimsta iš paprastumo. Naudoju nedaug ingredientų, bet kiekvienas jų atlieka svarbų vaidmenį patiekalo skonio ir tekstūros harmonijoje.</p>
+                            
+                            <p><strong>Sezoniniai produktai.</strong> Gamta yra geriausia šefė, todėl gerbiu jos ritmą ir renkuosi produktus, kurie yra savo geriausios kokybės tuo metu. Pavasario žalumynai, vasaros uogos, rudens grybai ir žiemos šakniavaisiai – kiekvienas sezonas turi savo išskirtinį charakterį.</p>
+                            
+                            <p><strong>Tradicijų puoselėjimas.</strong> Lietuviška virtuvė turi gilias tradicijas, kurias stengiuosi išsaugoti ir perteikti šiuolaikiniam skoniui. Kas gali būti geriau nei močiutės receptai, pritaikyti šiandieniniam gyvenimui?</p>
+                        </div>
+                        
+                        <div class="about-section">
+                            <h2 class="about-section-title">Mano darbo kampelis</h2>
+                            <p>Šiandien gyvenu nedideliame namelyje Kauno rajone, apsuptame medžių. Mano virtuvė – tai erdvė, kur tradicijos susipina su inovacijomis. Šviesi, pilna augalų ir žolelių, su dideliu mediniu stalu, paveldėtu iš močiutės, kur ir vyksta visi mano kulinariniai eksperimentai.</p>
+                            
+                            <p>Fotografuoju savo patiekalus natūralioje šviesoje, dažniausiai ant seno medinio stalo prie lango, kuris žvelgia į sodą. Tikiu, kad maisto nuotraukos turi perteikti ne tik patiekalo išvaizdą, bet ir atmosferą, istoriją, prisiminimus, kuriuos tas patiekalas sukelia.</p>
+                            
+                            <div class="gallery-grid">
+                                <div class="gallery-item">
+                                    <div class="local-placeholder" style="width:100%;height:250px;">
+                                        <span>Mano virtuvė</span>
+                                    </div>
+                                </div>
+                                <div class="gallery-item">
+                                    <div class="local-placeholder" style="width:100%;height:250px;">
+                                        <span>Fotografavimo kampas</span>
+                                    </div>
+                                </div>
+                                <div class="gallery-item">
+                                    <div class="local-placeholder" style="width:100%;height:250px;">
+                                        <span>Žolynų džiovinimas</span>
+                                    </div>
+                                </div>
+                                <div class="gallery-item">
+                                    <div class="local-placeholder" style="width:100%;height:250px;">
+                                        <span>Daržas</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="about-section">
+                            <h2 class="about-section-title">Keletas mėgstamiausių receptų</h2>
+                            <p>Per savo kulinarinę kelionę sukūriau daugybę receptų, tačiau keli iš jų tapo ypatingais mano širdžiai:</p>
+                            
+                            <div class="recipe-photos">
+                                <a href="#" onclick="showPage('recipe-page'); return false;" class="recipe-photo">
+                                    <div class="local-placeholder" style="width:100%;height:200px;">
+                                        <span>Šaltibarščiai</span>
+                                    </div>
+                                </a>
+                                <a href="#" onclick="showPage('recipe-page'); return false;" class="recipe-photo">
+                                    <div class="local-placeholder" style="width:100%;height:200px;">
+                                        <span>Medaus pyragas</span>
+                                    </div>
+                                </a>
+                                <a href="#" onclick="showPage('recipe-page'); return false;" class="recipe-photo">
+                                    <div class="local-placeholder" style="width:100%;height:200px;">
+                                        <span>Kugelis</span>
+                                    </div>
+                                </a>
+                            </div>
+                            
+                            <p>Šie receptai yra sujungti su mano asmeniniais prisiminimais ir istorijomis, todėl jie tapo ypatingai svarbūs mano kulinarinėje kelionėje.</p>
+                        </div>
+                        
+                        <div class="about-section">
+                            <h2 class="about-section-title">Susisiekite su manimi</h2>
+                            <p>Jei turite klausimų, pasiūlymų ar tiesiog norite pasidalinti savo kulinarinėmis istorijomis, būtinai susisiekite! Mėgstu bendrauti su skaitytojais ir dalintis patirtimi.</p>
+                            
+                            <div class="social-links-large">
+                                <a href="#" class="social-link-large"><i class="fa fa-envelope"></i></a>
+                                <a href="#" class="social-link-large"><i class="fa fa-instagram"></i></a>
+                                <a href="#" class="social-link-large"><i class="fa fa-facebook"></i></a>
+                                <a href="#" class="social-link-large"><i class="fa fa-pinterest"></i></a>
+                            </div>
+                            
+                            <div class="contact-form">
+                                <form>
+                                    <div class="form-group">
+                                        <label for="name">Vardas</label>
+                                        <input type="text" id="name" name="name" class="form-control" required autocomplete="name">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="email">El. paštas</label>
+                                        <input type="email" id="email" name="email" class="form-control" required autocomplete="email">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="message">Žinutė</label>
+                                        <textarea id="message" name="message" class="form-control" rows="5" required></textarea>
+                                    </div>
+                                    <button type="submit" class="submit-button">Siųsti žinutę</button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -276,33 +430,78 @@
             <aside class="sidebar">
                 <div class="sidebar-section">
                     <h3 class="sidebar-title">Apie mane</h3>
-                    <div id="sidebar-about">
-                        <!-- About info will be loaded dynamically -->
-                        <div class="loading">Kraunama...</div>
+                    <div class="local-placeholder about-me-img" style="width:120px;height:120px;border-radius:50%;margin:0 auto 15px;display:block;">
+                        <span>Lidija</span>
+                    </div>
+                    <div class="about-me-text">
+                        <p>Sveiki, esu Lidija – keliaujanti miško takeliais, pievomis ir laukais, kur kiekvienas žolės stiebelis, vėjo dvelksmas ar laukinė uoga tampa įkvėpimu naujam skoniui. Maisto gaminimas ir fotografija man – tai savotiška meditacija, leidžianti trumpam sustoti ir pasimėgauti akimirka šiandieniniame chaose.</p>
+                    </div>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fa fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fa fa-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="fa fa-pinterest"></i></a>
                     </div>
                 </div>
                 
                 <div class="sidebar-section">
                     <h3 class="sidebar-title">Populiarūs receptai</h3>
-                    <ul id="popular-recipes" class="popular-posts-list">
-                        <!-- Popular recipes will be loaded dynamically -->
-                        <li class="loading">Kraunama...</li>
+                    <ul class="popular-posts-list">
+                        <li class="popular-post-item">
+                            <div class="local-placeholder popular-post-img" style="width:60px;height:60px;border-radius:50%;margin-right:15px;">
+                                <span>Kugelis</span>
+                            </div>
+                            <div>
+                                <h4 class="popular-post-title"><a href="#" onclick="showPage('recipe-page'); return false;">Kugelis (bulvių plokštainis)</a></h4>
+                                <span class="popular-post-date">Kovo 15, 2025</span>
+                            </div>
+                        </li>
+                        <li class="popular-post-item">
+                            <div class="local-placeholder popular-post-img" style="width:60px;height:60px;border-radius:50%;margin-right:15px;">
+                                <span>Šakotis</span>
+                            </div>
+                            <div>
+                                <h4 class="popular-post-title"><a href="#" onclick="showPage('recipe-page'); return false;">Šakotis: lietuviškas medžio tortas</a></h4>
+                                <span class="popular-post-date">Vasario 28, 2025</span>
+                            </div>
+                        </li>
+                        <li class="popular-post-item">
+                            <div class="local-placeholder popular-post-img" style="width:60px;height:60px;border-radius:50%;margin-right:15px;">
+                                <span>Tinginys</span>
+                            </div>
+                            <div>
+                                <h4 class="popular-post-title"><a href="#" onclick="showPage('recipe-page'); return false;">Tinginys: desertas užimtoms dienoms</a></h4>
+                                <span class="popular-post-date">Vasario 10, 2025</span>
+                            </div>
+                        </li>
                     </ul>
                 </div>
                 
                 <div class="sidebar-section">
                     <h3 class="sidebar-title">Kategorijos</h3>
-                    <ul id="categories-list" class="categories-list">
-                        <!-- Categories will be loaded dynamically -->
-                        <li class="loading">Kraunama...</li>
+                    <ul class="categories-list">
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Gėrimai ir kokteiliai'); return false;">Gėrimai ir kokteiliai <span class="category-count">8</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Desertai'); return false;">Desertai <span class="category-count">14</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Sriubos'); return false;">Sriubos <span class="category-count">10</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Užkandžiai'); return false;">Užkandžiai <span class="category-count">12</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Varškė'); return false;">Varškė <span class="category-count">7</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Kiaušiniai'); return false;">Kiaušiniai <span class="category-count">5</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Daržovės'); return false;">Daržovės <span class="category-count">16</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Bulvės'); return false;">Bulvės <span class="category-count">9</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Mėsa'); return false;">Mėsa <span class="category-count">13</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Žuvis ir jūros gėrybės'); return false;">Žuvis ir jūros gėrybės <span class="category-count">6</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Kruopos ir grūdai'); return false;">Kruopos ir grūdai <span class="category-count">8</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Be glitimo'); return false;">Be glitimo <span class="category-count">4</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Be laktozės'); return false;">Be laktozės <span class="category-count">3</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Gamta lėkštėje'); return false;">Gamta lėkštėje <span class="category-count">11</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Iš močiutės virtuvės'); return false;">Iš močiutės virtuvės <span class="category-count">18</span></a></li>
                     </ul>
                 </div>
                 
                 <div class="sidebar-section">
                     <h3 class="sidebar-title">Naujienlaiškis</h3>
                     <p class="about-me-text">Užsiprenumeruokite ir gaukite naujausius receptus tiesiai į savo pašto dėžutę!</p>
-                    <form class="newsletter-form" id="newsletter-form">
-                        <input type="email" name="email" id="newsletter-email" placeholder="Jūsų el. paštas" class="newsletter-input" autocomplete="email" required>
+                    <form class="newsletter-form">
+                        <input type="email" name="email" id="newsletter-email" placeholder="Jūsų el. paštas" class="newsletter-input" autocomplete="email">
                         <button type="submit" class="newsletter-button">Prenumeruoti</button>
                     </form>
                 </div>
@@ -317,7 +516,7 @@
                     <a href="index.html">Pagrindinis</a>
                     <a href="#">Receptai</a>
                     <a href="about.html">Apie mane</a>
-                    <a href="#contact">Kontaktai</a>
+                    <a href="#">Kontaktai</a>
                     <a href="#">Privatumo politika</a>
                 </div>
                 <p class="copyright">© 2025 Šaukštas Meilės. Visos teisės saugomos.</p>
@@ -329,325 +528,156 @@
     <script src="js/navigation.js"></script>
     <script src="js/forms.js"></script>
     <script src="js/main.js"></script>
+    
     <script>
-        // Load about page content when the page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            // Load about page content
-            fetch('api/about.php')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.about) {
-                        renderAboutPage(data.about);
-                    } else {
-                        document.getElementById('about-content').innerHTML = 
-                            '<p>Nepavyko užkrauti informacijos. Prašome bandyti vėliau.</p>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading about page content:', error);
-                    document.getElementById('about-content').innerHTML = 
-                        '<p>Klaida kraunant informaciją. Prašome bandyti vėliau.</p>';
-                });
-                
-            // Load sidebar content (from index.html script)
-            loadSidebarContent();
+        // Function to create a styled placeholder that matches the website design
+        function createPlaceholderElement(width, height, text, isRound = false) {
+            // Create a div element instead of using an external image
+            const placeholder = document.createElement('div');
+            placeholder.className = 'local-placeholder';
             
-            // Check for contact anchor
-            if (window.location.hash === '#contact') {
-                setTimeout(() => {
-                    const contactSection = document.getElementById('contact-section');
-                    if (contactSection) {
-                        contactSection.scrollIntoView({ behavior: 'smooth' });
-                    }
-                }, 500);
+            // Set dimensions
+            placeholder.style.width = width + 'px';
+            placeholder.style.height = height + 'px';
+            
+            // Set border radius if round
+            if (isRound) {
+                placeholder.style.borderRadius = '50%';
             }
-        });
+            
+            // Base styling to match the website
+            placeholder.style.backgroundColor = '#f8f5f1';
+            placeholder.style.display = 'flex';
+            placeholder.style.alignItems = 'center';
+            placeholder.style.justifyContent = 'center';
+            placeholder.style.textAlign = 'center';
+            placeholder.style.padding = '10px';
+            placeholder.style.boxSizing = 'border-box';
+            placeholder.style.fontFamily = '"Source Sans Pro", sans-serif';
+            placeholder.style.overflow = 'hidden';
+            placeholder.style.wordBreak = 'break-word';
+            placeholder.style.color = '#7f4937';
+            placeholder.style.border = '1px solid #e6ddd6';
+            
+            // Create an inner span for the text to have better styling control
+            const textSpan = document.createElement('span');
+            
+            // Set the text
+            textSpan.textContent = text || '#f8f5f1';
+            textSpan.style.opacity = '0.7';
+            textSpan.style.fontSize = width < 150 ? '10px' : '12px';
+            
+            placeholder.appendChild(textSpan);
+            
+            return placeholder;
+        }
         
-        // Function to render about page content
-        function renderAboutPage(about) {
-            let sectionsHtml = '';
+        // Initialize image placeholder replacement immediately
+        function replacePlaceholdersNow() {
+            const placeholderImages = document.querySelectorAll('img[src^="img/placeholders/"]');
             
-            // Generate sections HTML
-            if (about.sections && about.sections.length > 0) {
-                about.sections.forEach(section => {
-                    sectionsHtml += `
-                        <div class="about-section">
-                            <h2 class="about-section-title">${section.title}</h2>
-                            <div>${section.content}</div>
-                        </div>
-                    `;
-                });
-            }
-            
-            // Generate favorite recipes section if there are any
-            let favoritesHtml = '';
-            if (about.favorite_recipes && about.favorite_recipes.length > 0) {
-                favoritesHtml = `
-                    <div class="about-section">
-                        <h2 class="about-section-title">Keletas mėgstamiausių receptų</h2>
-                        <p>Per savo kulinarinę kelionę sukūriau daugybę receptų, tačiau keli iš jų tapo ypatingais mano širdžiai:</p>
-                        
-                        <div class="recipe-photos">
-                `;
+            placeholderImages.forEach(img => {
+                // Extract filename from path
+                const filename = img.src.split('/').pop();
                 
-                about.favorite_recipes.forEach(recipe => {
-                    favoritesHtml += `
-                        <a href="#" onclick="loadRecipe('${recipe.id}'); return false;" class="recipe-photo">
-                            <img src="${recipe.image ? 'img/recipes/' + recipe.image : 'img/recipe-placeholder.jpg'}" alt="${recipe.title}">
-                        </a>
-                    `;
-                });
+                // Set dimensions based on image type and class
+                let width, height, isRound = false;
                 
-                favoritesHtml += `
-                        </div>
-                        <p>Šie receptai yra sujungti su mano asmeniniais prisiminimais ir istorijomis, todėl jie tapo ypatingai svarbūs mano kulinarinėje kelionėje.</p>
-                    </div>
-                `;
-            }
-            
-            // Generate gallery section if there are images
-            let galleryHtml = '';
-            if (about.gallery && about.gallery.length > 0) {
-                galleryHtml = `
-                    <div class="about-section">
-                        <h2 class="about-section-title">Mano darbo kampelis</h2>
-                        <p>Šiandien gyvenu nedideliame namelyje Kauno rajone, apsuptame medžių. Mano virtuvė – tai erdvė, kur tradicijos susipina su inovacijomis. Šviesi, pilna augalų ir žolelių, su dideliu mediniu stalu, paveldėtu iš močiutės, kur ir vyksta visi mano kulinariniai eksperimentai.</p>
-                        
-                        <div class="gallery-grid">
-                `;
+                if (img.classList.contains('popular-post-img')) {
+                    width = 60;
+                    height = 60;
+                    isRound = true; // Popular posts are round
+                } else if (img.classList.contains('about-me-img')) {
+                    width = 120;
+                    height = 120;
+                    isRound = true;
+                } else if (img.parentElement && img.parentElement.classList.contains('latest-post-image')) {
+                    width = 200;
+                    height = 200;
+                } else if (filename.startsWith('recipe')) {
+                    width = 500;
+                    height = 500;
+                } else if (filename.startsWith('popular')) {
+                    width = 60;
+                    height = 60;
+                    isRound = true;
+                } else if (filename.startsWith('profile')) {
+                    width = 200;
+                    height = 200;
+                    isRound = true;
+                } else {
+                    width = 200;
+                    height = 200;
+                }
                 
-                about.gallery.forEach(image => {
-                    galleryHtml += `
-                        <div class="gallery-item">
-                            <img src="img/gallery/${image.filename}" alt="${image.caption}">
-                        </div>
-                    `;
-                });
-                
-                galleryHtml += `
-                        </div>
-                    </div>
-                `;
-            }
-            
-            // Generate contact section
-            const contactHtml = `
-                <div class="about-section" id="contact-section">
-                    <h2 class="about-section-title">Susisiekite su manimi</h2>
-                    <p>Jei turite klausimų, pasiūlymų ar tiesiog norite pasidalinti savo kulinarinėmis istorijomis, būtinai susisiekite! Mėgstu bendrauti su skaitytojais ir dalintis patirtimi.</p>
+                // Try to load the actual image first
+                img.addEventListener('error', function() {
+                    // Image failed to load, replace with local placeholder div
+                    const placeholder = createPlaceholderElement(width, height, img.alt || filename, isRound);
                     
-                    <div class="social-links-large">
-                        <a href="mailto:${about.email}" class="social-link-large"><i class="fa fa-envelope"></i></a>
-                        <a href="${about.social.instagram}" class="social-link-large"><i class="fa fa-instagram"></i></a>
-                        <a href="${about.social.facebook}" class="social-link-large"><i class="fa fa-facebook"></i></a>
-                        <a href="${about.social.pinterest}" class="social-link-large"><i class="fa fa-pinterest"></i></a>
-                    </div>
+                    // Add the same classes as the image to maintain styling
+                    if (this.className) {
+                        placeholder.className += ' ' + this.className;
+                    }
                     
-                    <div class="contact-form">
-                        <form id="contact-form">
-                            <div class="form-group">
-                                <label for="name">Vardas</label>
-                                <input type="text" id="name" name="name" class="form-control" required autocomplete="name">
-                            </div>
-                            <div class="form-group">
-                                <label for="email">El. paštas</label>
-                                <input type="email" id="email" name="email" class="form-control" required autocomplete="email">
-                            </div>
-                            <div class="form-group">
-                                <label for="message">Žinutė</label>
-                                <textarea id="message" name="message" class="form-control" rows="5" required></textarea>
-                            </div>
-                            <button type="submit" class="submit-button">Siųsti žinutę</button>
-                        </form>
-                    </div>
-                </div>
-            `;
-            
-            // Assemble the entire about content
-            const aboutContent = `
-                <div class="about-header">
-                    <h1 class="about-title">${about.title || 'Apie Mane'}</h1>
-                    <p class="about-subtitle">${about.subtitle || ''}</p>
-                </div>
+                    if (this.parentNode) {
+                        this.parentNode.replaceChild(placeholder, this);
+                    }
+                });
                 
-                <div class="about-image">
-                    <img src="${about.image ? 'img/about/' + about.image : 'img/default-profile.jpg'}" alt="${about.title || 'Apie Mane'}">
-                </div>
-                
-                <p class="about-intro">${about.intro || ''}</p>
-                
-                <div class="about-content">
-                    ${sectionsHtml}
-                    ${favoritesHtml}
-                    ${galleryHtml}
-                    ${contactHtml}
-                </div>
-            `;
-            
-            // Update the content
-            document.getElementById('about-content').innerHTML = aboutContent;
+                // Force error if image is already broken
+                if (img.complete && img.naturalWidth === 0) {
+                    img.dispatchEvent(new Event('error'));
+                }
+            });
+        }
+        
+        // Execute immediately
+        document.addEventListener('DOMContentLoaded', function() {
+            replacePlaceholdersNow();
             
             // Set up contact form submission
-            const contactForm = document.getElementById('contact-form');
+            const contactForm = document.querySelector('.contact-form form');
             if (contactForm) {
                 contactForm.addEventListener('submit', function(e) {
                     e.preventDefault();
+                    const nameInput = this.querySelector('#name');
+                    const emailInput = this.querySelector('#email');
+                    const messageInput = this.querySelector('#message');
                     
-                    const formData = new FormData(this);
-                    
-                    fetch('api/contact.php', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('Ačiū už jūsų žinutę! Susisieksiu su jumis artimiausiu metu.');
-                            contactForm.reset();
-                        } else {
-                            alert(`Klaida: ${data.error}`);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error sending contact form:', error);
-                        alert('Klaida siunčiant žinutę. Prašome bandyti vėliau.');
-                    });
+                    if (nameInput && nameInput.value && 
+                        emailInput && emailInput.value && 
+                        messageInput && messageInput.value) {
+                        alert('Ačiū už jūsų žinutę! Susisieksiu su jumis artimiausiu metu.');
+                        nameInput.value = '';
+                        emailInput.value = '';
+                        messageInput.value = '';
+                    } else {
+                        alert('Prašome užpildyti visus būtinus laukus.');
+                    }
                 });
             }
-        }
-        
-        // Same loadSidebarContent function as in index.html
-        function loadSidebarContent() {
-            // Load about info
-            fetch('api/about.php')
-                .then(response => response.json())
-                .then(data => {
-                    const aboutContainer = document.getElementById('sidebar-about');
-                    if (aboutContainer && data.about) {
-                        aboutContainer.innerHTML = `
-                            <img src="${data.about.image ? 'img/about/' + data.about.image : 'img/default-profile.jpg'}" alt="Lidija" class="about-me-img">
-                            <div class="about-me-text">
-                                <p>${data.about.intro}</p>
-                            </div>
-                            <div class="social-links">
-                                <a href="${data.about.social.instagram}" class="social-link"><i class="fa fa-instagram"></i></a>
-                                <a href="${data.about.social.facebook}" class="social-link"><i class="fa fa-facebook"></i></a>
-                                <a href="${data.about.social.pinterest}" class="social-link"><i class="fa fa-pinterest"></i></a>
-                            </div>
-                        `;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading about info:', error);
-                    const aboutContainer = document.getElementById('sidebar-about');
-                    if (aboutContainer) {
-                        aboutContainer.innerHTML = '<p>Klaida kraunant informaciją.</p>';
-                    }
-                });
             
-            // Load popular recipes
-            fetch('api/recipes.php?popular=1')
-                .then(response => response.json())
-                .then(data => {
-                    const popularContainer = document.getElementById('popular-recipes');
-                    if (popularContainer) {
-                        popularContainer.innerHTML = '';
-                        
-                        if (data.recipes && data.recipes.length > 0) {
-                            data.recipes.forEach(recipe => {
-                                const date = new Date(recipe.created_at);
-                                const formattedDate = `${date.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric', year: 'numeric' })}`;
-                                
-                                const listItem = document.createElement('li');
-                                listItem.className = 'popular-post-item';
-                                
-                                listItem.innerHTML = `
-                                    <img src="${recipe.image ? 'img/recipes/' + recipe.image : 'img/recipe-placeholder.jpg'}" alt="${recipe.title}" class="popular-post-img">
-                                    <div>
-                                        <h4 class="popular-post-title"><a href="#" onclick="loadRecipe('${recipe.id}'); return false;">${recipe.title}</a></h4>
-                                        <span class="popular-post-date">${formattedDate}</span>
-                                    </div>
-                                `;
-                                
-                                popularContainer.appendChild(listItem);
-                            });
-                        } else {
-                            popularContainer.innerHTML = '<li>Nėra populiarių receptų.</li>';
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading popular recipes:', error);
-                    const popularContainer = document.getElementById('popular-recipes');
-                    if (popularContainer) {
-                        popularContainer.innerHTML = '<li>Klaida kraunant populiarius receptus.</li>';
-                    }
-                });
-            
-            // Load categories
-            fetch('api/categories.php')
-                .then(response => response.json())
-                .then(data => {
-                    const categoriesContainer = document.getElementById('categories-list');
-                    if (categoriesContainer) {
-                        categoriesContainer.innerHTML = '';
-                        
-                        if (data.categories && data.categories.length > 0) {
-                            data.categories.forEach(category => {
-                                const listItem = document.createElement('li');
-                                
-                                listItem.innerHTML = `
-                                    <a href="#" onclick="showPage('category-page'); loadCategory('${category.name}'); return false;">
-                                        ${category.name} <span class="category-count">${category.count}</span>
-                                    </a>
-                                `;
-                                
-                                categoriesContainer.appendChild(listItem);
-                            });
-                        } else {
-                            categoriesContainer.innerHTML = '<li>Nėra kategorijų.</li>';
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading categories:', error);
-                    const categoriesContainer = document.getElementById('categories-list');
-                    if (categoriesContainer) {
-                        categoriesContainer.innerHTML = '<li>Klaida kraunant kategorijas.</li>';
-                    }
-                });
-                
-            // Setup newsletter form
-            const newsletterForm = document.getElementById('newsletter-form');
+            // Set up newsletter form submission
+            const newsletterForm = document.querySelector('.newsletter-form');
             if (newsletterForm) {
                 newsletterForm.addEventListener('submit', function(e) {
                     e.preventDefault();
-                    const emailInput = this.querySelector('#newsletter-email');
-                    if (emailInput && emailInput.value) {
-                        // Submit to newsletter API
-                        fetch('api/newsletter.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: `email=${encodeURIComponent(emailInput.value)}`
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                alert(`Ačiū už prenumeratą! Naujienlaiškis bus siunčiamas adresu: ${emailInput.value}`);
-                                emailInput.value = '';
-                            } else {
-                                alert(`Klaida: ${data.error}`);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error subscribing to newsletter:', error);
-                            alert('Klaida prenumeruojant naujienlaiškį. Prašome bandyti vėliau.');
-                        });
+                    const emailInput = this.querySelector('.newsletter-input');
+                    if (emailInput && emailInput.value && isValidEmail(emailInput.value)) {
+                        alert(`Ačiū už prenumeratą! Naujienlaiškis bus siunčiamas adresu: ${emailInput.value}`);
+                        emailInput.value = '';
+                    } else {
+                        alert('Prašome įvesti teisingą el. pašto adresą.');
                     }
                 });
             }
+        });
+        
+        // Helper function to validate email
+        function isValidEmail(email) {
+            const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            return re.test(String(email).toLowerCase());
         }
     </script>
 </body>

@@ -21,56 +21,85 @@
         /* Inline critical CSS for faster loading */
         .page { display: none; }
         .page.active { display: block; }
+        img[src^="img/placeholders/"] { background-color: #f8f5f1; border: 1px solid #e6ddd6; min-height: 100px; }
         .mobile-menu-toggle { display: none; }
         
-        /* Dropdown styles enhancement */
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: white;
-            min-width: 200px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
-            z-index: 100;
-            padding: 10px 0;
-            margin-top: 5px;
-            border: 1px solid #eee8e0;
-            left: 50%;
-            transform: translateX(-50%);
-            top: 100%;
+        /* Local placeholder styles */
+        /* Revised placeholder styles to match the new design issues */
+        .local-placeholder {
+            max-width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 10px;
+            box-sizing: border-box;
+            font-family: 'Source Sans Pro', sans-serif;
+            overflow: hidden;
+            word-break: break-word;
+            background-color: #f8f5f1;
+            color: #7f4937;
+            border: 1px solid #e6ddd6;
+            border-radius: 0;
+            font-weight: normal;
+            line-height: 1.3;
         }
 
-        .dropdown:hover .dropdown-content {
-            display: block;
+        /* Fix for popular posts styling */
+        .popular-post-img.local-placeholder {
+            width: 60px !important;
+            height: 60px !important;
+            border-radius: 50% !important; /* Make sure it's perfectly round */
+            object-fit: cover;
+            margin-right: 15px;
+            background-color: #f8f5f1;
+            color: #7f4937;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            text-align: center;
         }
 
-        .dropdown {
-            position: relative;
-            display: inline-block;
-            padding-bottom: 10px;
+        /* Fix for latest posts styling */
+        .latest-post-image .local-placeholder {
+            width: 100% !important;
+            height: 100% !important;
+            border-radius: 0 !important;
+            background-color: #f8f5f1;
+            color: #7f4937;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            text-align: center;
         }
 
-        .dropdown:after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 20px;
+        /* Specifically targeting the placeholder text appearance */
+        .local-placeholder span {
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 12px;
+            font-weight: normal;
+            color: #7f4937;
+            opacity: 0.7;
+            text-transform: none; /* Don't transform the text */
         }
 
-        .dropdown-content a {
-            padding: 8px 16px;
-            margin: 2px 0;
+        /* Fix for the popular post placeholders */
+        .popular-post-item .local-placeholder span {
+            font-size: 10px;
+            color: #7f4937;
+            opacity: 0.7;
         }
 
-        .dropdown > a:after {
-            content: '▼';
-            font-size: 0.6rem;
-            margin-left: 5px;
-            vertical-align: middle;
-            color: #aa5f44;
-            display: inline-block;
-        }
+        /* Fix for latest posts placeholders */
+        .latest-post-card .local-placeholder span {
+            font-size: 12px;
+            color: #7f4937;
+            opacity: 0.7;
+}
         
         @media (max-width: 768px) {
             .mobile-menu-toggle {
@@ -95,6 +124,58 @@
                 display: flex;
             }
         }
+        .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: white;
+        min-width: 200px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
+        z-index: 100; /* Increased z-index to ensure it's on top */
+        padding: 10px 0;
+        margin-top: 5px;
+        border: 1px solid #eee8e0;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 100%; /* Position it right below the parent item */
+    }
+
+    /* Make sure the dropdown stays visible when hovering over it */
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+
+    /* Add a small padding to create space between the parent link and dropdown */
+    .dropdown {
+        position: relative;
+        display: inline-block;
+        padding-bottom: 10px; /* Add padding to create hover space */
+    }
+
+    /* Create a hover area that connects the dropdown menu to the parent item */
+    .dropdown:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 20px;
+    }
+
+    /* Make sure the dropdown children have sufficient padding */
+    .dropdown-content a {
+        padding: 8px 16px;
+        margin: 2px 0;
+    }
+
+    /* Fix for dropdown arrow positioning */
+    .dropdown > a:after {
+        content: '▼';
+        font-size: 0.6rem;
+        margin-left: 5px;
+        vertical-align: middle;
+        color: #aa5f44;
+        display: inline-block;
+    }
     </style>
 </head>
 <body>
@@ -129,7 +210,7 @@
                             <a href="#" onclick="showPage('category-page'); loadCategory('Iš močiutės virtuvės'); return false;">Iš močiutės virtuvės</a>
                         </div>
                     </li>
-                    <li><a href="about.html">APIE MANE</a></li>
+                    <li><a href="#" onclick="alert('Apie mane puslapis ruošiamas'); return false;">APIE MANE</a></li>
                 </ul>
             </nav>
         </header>
@@ -138,20 +219,130 @@
         <div class="container main-content">
             <!-- Main Column -->
             <div class="content-main">
-                <div id="featured-recipes" class="recipe-grid">
-                    <!-- Featured recipes will be loaded dynamically -->
-                    <div class="loading">Kraunama...</div>
+                <div class="recipe-grid">
+                    <div class="recipe-card">
+                        <a href="#" onclick="showPage('recipe-page'); return false;">
+                            <div class="recipe-card-image">
+                                <img src="img/placeholders/recipe1.jpg" alt="Cheeseburger bulvytės">
+                            </div>
+                            <div class="recipe-card-title">
+                                CHEESEBURGER BULVYTĖS
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div class="recipe-card">
+                        <a href="#" onclick="showPage('recipe-page'); return false;">
+                            <div class="recipe-card-image">
+                                <img src="img/placeholders/recipe2.jpg" alt="Kiaušiniai su grūdėtos varškės ir avokadų kremu">
+                            </div>
+                            <div class="recipe-card-title">
+                                KIAUŠINIAI SU GRŪDĖTOS VARŠKĖS IR AVOKADŲ KREMU
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div class="recipe-card">
+                        <a href="#" onclick="showPage('recipe-page'); return false;">
+                            <div class="recipe-card-image">
+                                <img src="img/placeholders/recipe3.jpg" alt="Skaniausias keptas viščiukas">
+                            </div>
+                            <div class="recipe-card-title">
+                                SKANIAUSIAS KEPTAS VIŠČIUKAS SU BULVIŲ SKILTELĖMIS IR MORKŲ SALOTOMIS
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div class="recipe-card">
+                        <a href="#" onclick="showPage('recipe-page'); return false;">
+                            <div class="recipe-card-image">
+                                <img src="img/placeholders/recipe4.jpg" alt="Bulvių skrebutėliai su avokadų kremu ir silke">
+                            </div>
+                            <div class="recipe-card-title">
+                                BULVIŲ SKREBUTĖLIAI SU AVOKADŲ KREMU IR SILKE
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div class="recipe-card">
+                        <a href="#" onclick="showPage('recipe-page'); return false;">
+                            <div class="recipe-card-image">
+                                <img src="img/placeholders/recipe5.jpg" alt="Plakta feta su skrudintų prosciutto, datulėmis ir graikiniais riešutais">
+                            </div>
+                            <div class="recipe-card-title">
+                                PLAKTA FETA SU SKRUDINTŲ PROSCIUTTO, DATULĖMIS IR GRAIKINIAIS RIEŠUTAIS
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div class="recipe-card">
+                        <a href="#" onclick="showPage('recipe-page'); return false;">
+                            <div class="recipe-card-image">
+                                <img src="img/placeholders/recipe6.jpg" alt="Pistacijų rikotos pyragas su aviečių kremu">
+                            </div>
+                            <div class="recipe-card-title">
+                                PISTACIJŲ RIKOTOS PYRAGAS SU AVIEČIŲ KREMU
+                            </div>
+                        </a>
+                    </div>
                 </div>
                 
                 <div class="load-more-container">
-                    <a href="#" class="load-more-button" onclick="loadMoreFeaturedRecipes(); return false;">DAUGIAU RECEPTŲ</a>
+                    <a href="#" class="load-more-button">DAUGIAU RECEPTŲ</a>
                 </div>
                 
                 <h3 class="latest-heading">Naujausi</h3>
                 
-                <div id="latest-recipes" class="latest-post">
-                    <!-- Latest recipes will be loaded dynamically -->
-                    <div class="loading">Kraunama...</div>
+                <div class="latest-post">
+                    <a href="#" onclick="showPage('recipe-page'); return false;" class="latest-post-card">
+                        <div class="latest-post-image">
+                            <img src="img/placeholders/latest1.jpg" alt="Baklažanų ir fetos užtepėlė">
+                        </div>
+                        <div class="latest-post-content">
+                            <h4 class="latest-post-title">Baklažanų ir fetos užtepėlė su traškia duona</h4>
+                            <span class="latest-post-date">Gegužės 8, 2025</span>
+                        </div>
+                    </a>
+                    
+                    <a href="#" onclick="showPage('recipe-page'); return false;" class="latest-post-card">
+                        <div class="latest-post-image">
+                            <img src="img/placeholders/latest2.jpg" alt="Spanguolių pyragas">
+                        </div>
+                        <div class="latest-post-content">
+                            <h4 class="latest-post-title">Spanguolių pyragas su baltojo šokolado plutele</h4>
+                            <span class="latest-post-date">Gegužės 5, 2025</span>
+                        </div>
+                    </a>
+                    
+                    <a href="#" onclick="showPage('recipe-page'); return false;" class="latest-post-card">
+                        <div class="latest-post-image">
+                            <img src="img/placeholders/latest3.jpg" alt="Šaltibarščiai">
+                        </div>
+                        <div class="latest-post-content">
+                            <h4 class="latest-post-title">Šaltibarščiai: vasaros skonis dubenyje</h4>
+                            <span class="latest-post-date">Gegužės 3, 2025</span>
+                        </div>
+                    </a>
+                    
+                    <a href="#" onclick="showPage('recipe-page'); return false;" class="latest-post-card">
+                        <div class="latest-post-image">
+                            <img src="img/placeholders/latest4.jpg" alt="Naminė granola">
+                        </div>
+                        <div class="latest-post-content">
+                            <h4 class="latest-post-title">Naminė granola su medumi ir riešutais</h4>
+                            <span class="latest-post-date">Balandžio 30, 2025</span>
+                        </div>
+                    </a>
+                    
+                    <a href="#" onclick="showPage('recipe-page'); return false;" class="latest-post-card">
+                        <div class="latest-post-image">
+                            <img src="img/placeholders/latest5.jpg" alt="Cepelinai">
+                        </div>
+                        <div class="latest-post-content">
+                            <h4 class="latest-post-title">Cepelinai: mano močiutės receptas</h4>
+                            <span class="latest-post-date">Balandžio 28, 2025</span>
+                        </div>
+                    </a>
                 </div>
             </div>
             
@@ -159,33 +350,71 @@
             <aside class="sidebar">
                 <div class="sidebar-section">
                     <h3 class="sidebar-title">Apie mane</h3>
-                    <div id="sidebar-about">
-                        <!-- About info will be loaded dynamically -->
-                        <div class="loading">Kraunama...</div>
+                    <img src="img/placeholders/profile.jpg" alt="Lidija" class="about-me-img">
+                    <div class="about-me-text">
+                        <p>Sveiki, esu Lidija – keliaujanti miško takeliais, pievomis ir laukais, kur kiekvienas žolės stiebelis, vėjo dvelksmas ar laukinė uoga tampa įkvėpimu naujam skoniui. Maisto gaminimas ir fotografija man – tai savotiška meditacija, leidžianti trumpam sustoti ir pasimėgauti akimirka šiandieniniame chaose.</p>
+                        <p>Mėgaujuosi ramybe, kai lėtai verda sriuba, šoka garai virš puodelio arbatos, o širdis prisimena močiutės virtuvės šilumą. „Šaukštas meilės" – tai mano kelias į širdį per maistą, kupiną gamtos dovanų, švelnumo ir paprastumo. Kviečiu keliauti kartu – ragauti, įkvėpti, atrasti šilumą ir meilę kiekviename šaukšte.</p>
+                    </div>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fa fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fa fa-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="fa fa-pinterest"></i></a>
                     </div>
                 </div>
                 
                 <div class="sidebar-section">
                     <h3 class="sidebar-title">Populiarūs receptai</h3>
-                    <ul id="popular-recipes" class="popular-posts-list">
-                        <!-- Popular recipes will be loaded dynamically -->
-                        <li class="loading">Kraunama...</li>
+                    <ul class="popular-posts-list">
+                        <li class="popular-post-item">
+                            <img src="img/placeholders/popular1.jpg" alt="Kugelis" class="popular-post-img">
+                            <div>
+                                <h4 class="popular-post-title"><a href="#" onclick="showPage('recipe-page'); return false;">Kugelis (bulvių plokštainis)</a></h4>
+                                <span class="popular-post-date">Kovo 15, 2025</span>
+                            </div>
+                        </li>
+                        <li class="popular-post-item">
+                            <img src="img/placeholders/popular2.jpg" alt="Šakotis" class="popular-post-img">
+                            <div>
+                                <h4 class="popular-post-title"><a href="#" onclick="showPage('recipe-page'); return false;">Šakotis: lietuviškas medžio tortas</a></h4>
+                                <span class="popular-post-date">Vasario 28, 2025</span>
+                            </div>
+                        </li>
+                        <li class="popular-post-item">
+                            <img src="img/placeholders/popular3.jpg" alt="Tinginys" class="popular-post-img">
+                            <div>
+                                <h4 class="popular-post-title"><a href="#" onclick="showPage('recipe-page'); return false;">Tinginys: desertas užimtoms dienoms</a></h4>
+                                <span class="popular-post-date">Vasario 10, 2025</span>
+                            </div>
+                        </li>
                     </ul>
                 </div>
                 
                 <div class="sidebar-section">
                     <h3 class="sidebar-title">Kategorijos</h3>
-                    <ul id="categories-list" class="categories-list">
-                        <!-- Categories will be loaded dynamically -->
-                        <li class="loading">Kraunama...</li>
+                    <ul class="categories-list">
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Gėrimai ir kokteiliai'); return false;">Gėrimai ir kokteiliai <span class="category-count">8</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Desertai'); return false;">Desertai <span class="category-count">14</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Sriubos'); return false;">Sriubos <span class="category-count">10</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Užkandžiai'); return false;">Užkandžiai <span class="category-count">12</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Varškė'); return false;">Varškė <span class="category-count">7</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Kiaušiniai'); return false;">Kiaušiniai <span class="category-count">5</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Daržovės'); return false;">Daržovės <span class="category-count">16</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Bulvės'); return false;">Bulvės <span class="category-count">9</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Mėsa'); return false;">Mėsa <span class="category-count">13</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Žuvis ir jūros gėrybės'); return false;">Žuvis ir jūros gėrybės <span class="category-count">6</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Kruopos ir grūdai'); return false;">Kruopos ir grūdai <span class="category-count">8</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Be glitimo'); return false;">Be glitimo <span class="category-count">4</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Be laktozės'); return false;">Be laktozės <span class="category-count">3</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Gamta lėkštėje'); return false;">Gamta lėkštėje <span class="category-count">11</span></a></li>
+                        <li><a href="#" onclick="showPage('category-page'); loadCategory('Iš močiutės virtuvės'); return false;">Iš močiutės virtuvės <span class="category-count">18</span></a></li>
                     </ul>
                 </div>
                 
                 <div class="sidebar-section">
                     <h3 class="sidebar-title">Naujienlaiškis</h3>
                     <p class="about-me-text">Užsiprenumeruokite ir gaukite naujausius receptus tiesiai į savo pašto dėžutę!</p>
-                    <form class="newsletter-form" id="newsletter-form">
-                        <input type="email" name="email" id="newsletter-email" placeholder="Jūsų el. paštas" class="newsletter-input" autocomplete="email" required>
+                    <form class="newsletter-form">
+                        <input type="email" name="email" id="newsletter-email" placeholder="Jūsų el. paštas" class="newsletter-input" autocomplete="email">
                         <button type="submit" class="newsletter-button">Prenumeruoti</button>
                     </form>
                 </div>
@@ -199,9 +428,9 @@
                 <div class="footer-links">
                     <a href="#" onclick="showPage('home-page'); return false;">Pagrindinis</a>
                     <a href="#">Receptai</a>
-                    <a href="about.html">Apie mane</a>
-                    <a href="#" onclick="showContactForm(); return false;">Kontaktai</a>
-                    <a href="privacy.html">Privatumo politika</a>
+                    <a href="#">Apie mane</a>
+                    <a href="#">Kontaktai</a>
+                    <a href="#">Privatumo politika</a>
                 </div>
                 <p class="copyright">© 2025 Šaukštas Meilės. Visos teisės saugomos.</p>
             </div>
@@ -222,278 +451,115 @@
     <script src="js/navigation.js"></script>
     <script src="js/forms.js"></script>
     <script src="js/main.js"></script>
+    
+    <!-- Inline deferred script for critical functionality -->
     <script>
-        // Load featured recipes when the page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            // Load featured recipes
-            fetch('api/recipes.php?featured=1')
-                .then(response => response.json())
-                .then(data => {
-                    const featuredContainer = document.getElementById('featured-recipes');
-                    if (featuredContainer) {
-                        featuredContainer.innerHTML = '';
-                        
-                        if (data.recipes && data.recipes.length > 0) {
-                            data.recipes.forEach(recipe => {
-                                const recipeCard = document.createElement('div');
-                                recipeCard.className = 'recipe-card';
-                                
-                                recipeCard.innerHTML = `
-                                    <a href="#" onclick="loadRecipe('${recipe.id}'); return false;">
-                                        <div class="recipe-card-image">
-                                            <img src="${recipe.image ? 'img/recipes/' + recipe.image : 'img/recipe-placeholder.jpg'}" alt="${recipe.title}">
-                                        </div>
-                                        <div class="recipe-card-title">
-                                            ${recipe.title.toUpperCase()}
-                                        </div>
-                                    </a>
-                                `;
-                                
-                                featuredContainer.appendChild(recipeCard);
-                            });
-                        } else {
-                            featuredContainer.innerHTML = '<p>Nėra receptų.</p>';
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading featured recipes:', error);
-                    const featuredContainer = document.getElementById('featured-recipes');
-                    if (featuredContainer) {
-                        featuredContainer.innerHTML = '<p>Klaida kraunant receptus.</p>';
-                    }
-                });
-            
-            // Load latest recipes
-            fetch('api/recipes.php?latest=1')
-                .then(response => response.json())
-                .then(data => {
-                    const latestContainer = document.getElementById('latest-recipes');
-                    if (latestContainer) {
-                        latestContainer.innerHTML = '';
-                        
-                        if (data.recipes && data.recipes.length > 0) {
-                            data.recipes.forEach(recipe => {
-                                const date = new Date(recipe.created_at);
-                                const formattedDate = `${date.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric', year: 'numeric' })}`;
-                                
-                                const recipeCard = document.createElement('a');
-                                recipeCard.href = "#";
-                                recipeCard.className = 'latest-post-card';
-                                recipeCard.onclick = function() {
-                                    loadRecipe(recipe.id);
-                                    return false;
-                                };
-                                
-                                recipeCard.innerHTML = `
-                                    <div class="latest-post-image">
-                                        <img src="${recipe.image ? 'img/recipes/' + recipe.image : 'img/recipe-placeholder.jpg'}" alt="${recipe.title}">
-                                    </div>
-                                    <div class="latest-post-content">
-                                        <h4 class="latest-post-title">${recipe.title}</h4>
-                                        <span class="latest-post-date">${formattedDate}</span>
-                                    </div>
-                                `;
-                                
-                                latestContainer.appendChild(recipeCard);
-                            });
-                        } else {
-                            latestContainer.innerHTML = '<p>Nėra naujausių receptų.</p>';
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading latest recipes:', error);
-                    const latestContainer = document.getElementById('latest-recipes');
-                    if (latestContainer) {
-                        latestContainer.innerHTML = '<p>Klaida kraunant naujausius receptus.</p>';
-                    }
-                });
-            
-            // Load sidebar content
-            loadSidebarContent();
-        });
+    // Function to create a styled placeholder that matches the website design
+    // Function to create a styled placeholder that matches the website design
+    function createPlaceholderElement(width, height, text, isRound = false) {
+        // Create a div element instead of using an external image
+        const placeholder = document.createElement('div');
+        placeholder.className = 'local-placeholder';
         
-        // Function to load more featured recipes
-        function loadMoreFeaturedRecipes() {
-            const featuredContainer = document.getElementById('featured-recipes');
-            const recipeCount = featuredContainer.querySelectorAll('.recipe-card').length;
-            
-            fetch(`api/recipes.php?featured=1&offset=${recipeCount}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.recipes && data.recipes.length > 0) {
-                        data.recipes.forEach(recipe => {
-                            const recipeCard = document.createElement('div');
-                            recipeCard.className = 'recipe-card';
-                            
-                            recipeCard.innerHTML = `
-                                <a href="#" onclick="loadRecipe('${recipe.id}'); return false;">
-                                    <div class="recipe-card-image">
-                                        <img src="${recipe.image ? 'img/recipes/' + recipe.image : 'img/recipe-placeholder.jpg'}" alt="${recipe.title}">
-                                    </div>
-                                    <div class="recipe-card-title">
-                                        ${recipe.title.toUpperCase()}
-                                    </div>
-                                </a>
-                            `;
-                            
-                            featuredContainer.appendChild(recipeCard);
-                        });
-                        
-                        // Hide load more button if no more recipes
-                        if (data.recipes.length < 6) {
-                            document.querySelector('.load-more-button').style.display = 'none';
-                        }
-                    } else {
-                        document.querySelector('.load-more-button').style.display = 'none';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading more recipes:', error);
-                    alert('Klaida kraunant daugiau receptų.');
-                });
+        // Set dimensions
+        placeholder.style.width = width + 'px';
+        placeholder.style.height = height + 'px';
+        
+        // Set border radius if round
+        if (isRound) {
+            placeholder.style.borderRadius = '50%';
         }
         
-        // Function to load sidebar content
-        function loadSidebarContent() {
-            // Load about info
-            fetch('api/about.php')
-                .then(response => response.json())
-                .then(data => {
-                    const aboutContainer = document.getElementById('sidebar-about');
-                    if (aboutContainer && data.about) {
-                        aboutContainer.innerHTML = `
-                            <img src="${data.about.image ? 'img/about/' + data.about.image : 'img/default-profile.jpg'}" alt="Lidija" class="about-me-img">
-                            <div class="about-me-text">
-                                <p>${data.about.intro}</p>
-                            </div>
-                            <div class="social-links">
-                                <a href="${data.about.social.instagram}" class="social-link"><i class="fa fa-instagram"></i></a>
-                                <a href="${data.about.social.facebook}" class="social-link"><i class="fa fa-facebook"></i></a>
-                                <a href="${data.about.social.pinterest}" class="social-link"><i class="fa fa-pinterest"></i></a>
-                            </div>
-                        `;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading about info:', error);
-                    const aboutContainer = document.getElementById('sidebar-about');
-                    if (aboutContainer) {
-                        aboutContainer.innerHTML = '<p>Klaida kraunant informaciją.</p>';
-                    }
-                });
+        // Base styling to match the website
+        placeholder.style.backgroundColor = '#f8f5f1';
+        placeholder.style.display = 'flex';
+        placeholder.style.alignItems = 'center';
+        placeholder.style.justifyContent = 'center';
+        placeholder.style.textAlign = 'center';
+        placeholder.style.padding = '10px';
+        placeholder.style.boxSizing = 'border-box';
+        placeholder.style.fontFamily = '"Source Sans Pro", sans-serif';
+        placeholder.style.overflow = 'hidden';
+        placeholder.style.fontSize = '12px';
+        placeholder.style.wordBreak = 'break-word';
+        placeholder.style.color = '#7f4937';
+        placeholder.style.border = '1px solid #e6ddd6';
+        
+        // Create an inner span for the text to have better styling control
+        const textSpan = document.createElement('span');
+        
+        // Format the text to look like a HEX code
+        textSpan.textContent = '#f8f5f1';
+        textSpan.style.opacity = '0.7';
+        textSpan.style.fontSize = width < 150 ? '10px' : '12px';
+        
+        placeholder.appendChild(textSpan);
+        
+        return placeholder;
+    }
+    
+    // Initialize image placeholder replacement immediately
+    function replacePlaceholdersNow() {
+        const placeholderImages = document.querySelectorAll('img[src^="img/placeholders/"]');
+        
+        placeholderImages.forEach(img => {
+            // Extract filename from path
+            const filename = img.src.split('/').pop();
             
-            // Load popular recipes
-            fetch('api/recipes.php?popular=1')
-                .then(response => response.json())
-                .then(data => {
-                    const popularContainer = document.getElementById('popular-recipes');
-                    if (popularContainer) {
-                        popularContainer.innerHTML = '';
-                        
-                        if (data.recipes && data.recipes.length > 0) {
-                            data.recipes.forEach(recipe => {
-                                const date = new Date(recipe.created_at);
-                                const formattedDate = `${date.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric', year: 'numeric' })}`;
-                                
-                                const listItem = document.createElement('li');
-                                listItem.className = 'popular-post-item';
-                                
-                                listItem.innerHTML = `
-                                    <img src="${recipe.image ? 'img/recipes/' + recipe.image : 'img/recipe-placeholder.jpg'}" alt="${recipe.title}" class="popular-post-img">
-                                    <div>
-                                        <h4 class="popular-post-title"><a href="#" onclick="loadRecipe('${recipe.id}'); return false;">${recipe.title}</a></h4>
-                                        <span class="popular-post-date">${formattedDate}</span>
-                                    </div>
-                                `;
-                                
-                                popularContainer.appendChild(listItem);
-                            });
-                        } else {
-                            popularContainer.innerHTML = '<li>Nėra populiarių receptų.</li>';
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading popular recipes:', error);
-                    const popularContainer = document.getElementById('popular-recipes');
-                    if (popularContainer) {
-                        popularContainer.innerHTML = '<li>Klaida kraunant populiarius receptus.</li>';
-                    }
-                });
+            // Set dimensions based on image type and class
+            let width, height, isRound = false;
             
-            // Load categories
-            fetch('api/categories.php')
-                .then(response => response.json())
-                .then(data => {
-                    const categoriesContainer = document.getElementById('categories-list');
-                    if (categoriesContainer) {
-                        categoriesContainer.innerHTML = '';
-                        
-                        if (data.categories && data.categories.length > 0) {
-                            data.categories.forEach(category => {
-                                const listItem = document.createElement('li');
-                                
-                                listItem.innerHTML = `
-                                    <a href="#" onclick="showPage('category-page'); loadCategory('${category.name}'); return false;">
-                                        ${category.name} <span class="category-count">${category.count}</span>
-                                    </a>
-                                `;
-                                
-                                categoriesContainer.appendChild(listItem);
-                            });
-                        } else {
-                            categoriesContainer.innerHTML = '<li>Nėra kategorijų.</li>';
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading categories:', error);
-                    const categoriesContainer = document.getElementById('categories-list');
-                    if (categoriesContainer) {
-                        categoriesContainer.innerHTML = '<li>Klaida kraunant kategorijas.</li>';
-                    }
-                });
-                
-            // Setup newsletter form
-            const newsletterForm = document.getElementById('newsletter-form');
-            if (newsletterForm) {
-                newsletterForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const emailInput = this.querySelector('#newsletter-email');
-                    if (emailInput && emailInput.value) {
-                        // Submit to newsletter API
-                        fetch('api/newsletter.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: `email=${encodeURIComponent(emailInput.value)}`
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                alert(`Ačiū už prenumeratą! Naujienlaiškis bus siunčiamas adresu: ${emailInput.value}`);
-                                emailInput.value = '';
-                            } else {
-                                alert(`Klaida: ${data.error}`);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error subscribing to newsletter:', error);
-                            alert('Klaida prenumeruojant naujienlaiškį. Prašome bandyti vėliau.');
-                        });
-                    }
-                });
+            if (img.classList.contains('popular-post-img')) {
+                width = 60;
+                height = 60;
+                isRound = true; // Popular posts are round
+            } else if (img.classList.contains('about-me-img')) {
+                width = 120;
+                height = 120;
+                isRound = true;
+            } else if (img.parentElement && img.parentElement.classList.contains('latest-post-image')) {
+                width = 200;
+                height = 200;
+            } else if (filename.startsWith('recipe')) {
+                width = 500;
+                height = 500;
+            } else if (filename.startsWith('popular')) {
+                width = 60;
+                height = 60;
+                isRound = true;
+            } else if (filename.startsWith('profile')) {
+                width = 200;
+                height = 200;
+                isRound = true;
+            } else {
+                width = 200;
+                height = 200;
             }
-        }
-        
-        // Helper function to show contact form
-        function showContactForm() {
-            // Redirect to about page with contact form anchor
-            window.location.href = 'about.html#contact';
-        }
-    </script>
+            
+            // Try to load the actual image first
+            img.addEventListener('error', function() {
+                // Image failed to load, replace with local placeholder div
+                const placeholder = createPlaceholderElement(width, height, '#f8f5f1', isRound);
+                
+                // Add the same classes as the image to maintain styling
+                if (this.className) {
+                    placeholder.className += ' ' + this.className;
+                }
+                
+                if (this.parentNode) {
+                    this.parentNode.replaceChild(placeholder, this);
+                }
+            });
+            
+            // Force error if image is already broken
+            if (img.complete && img.naturalWidth === 0) {
+                img.dispatchEvent(new Event('error'));
+            }
+        });
+    }
+    
+    // Execute immediately
+    replacePlaceholdersNow();
+</script>
 </body>
 </html>
