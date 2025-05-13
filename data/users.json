@@ -1,0 +1,10 @@
+[
+  {
+    "id": "admin123",
+    "username": "admin",
+    "password": "$2y$10$YOUR_BCRYPT_HASH_HERE",
+    "name": "Administrator",
+    "role": "admin",
+    "created_at": "2023-01-01T00:00:00Z"
+  }
+]
