@@ -26,49 +26,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Function to add a test button for debugging
-function addTestButton() {
-    const header = document.querySelector('.admin-section-header');
-    if (header) {
-        const testBtn = document.createElement('button');
-        testBtn.textContent = 'Test API Connection';
-        testBtn.className = 'submit-button';
-        testBtn.style.marginLeft = '10px';
-        testBtn.onclick = testApiConnection;
-        header.appendChild(testBtn);
-    }
-}
-
-// Function to test API connection
-function testApiConnection() {
-    // Create simple test data
-    const testData = new FormData();
-    testData.append('test_field', 'test_value');
-    
-    // Show notification
-    showNotification('Test', 'Testing API connection...', 'success');
-    
-    // Try to fetch the test endpoint
-    fetch('test.php', {
-        method: 'POST',
-        body: testData
-    })
-    .then(response => {
-        console.log('Test response status:', response.status);
-        if (!response.ok) {
-            throw new Error(`Error: ${response.status} - ${response.statusText}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Test API Response:', data);
-        showNotification('Success', 'API test successful! Check console for details.', 'success');
-    })
-    .catch(error => {
-        console.error('Test API Error:', error);
-        showNotification('Error', `API test failed: ${error.message}`, 'error');
-    });
-}
 
 /**
  * Login and Authentication Functions
@@ -598,118 +555,9 @@ function updateDashboardWidgets(data) {
     }
 }
 
-// Function to update recent recipes table
-function updateRecentRecipes(recipes) {
-    const table = document.querySelector('#page-dashboard .admin-section:nth-child(2) tbody');
-    if (!table) return;
-    
-    if (recipes.length === 0) {
-        table.innerHTML = '<tr><td colspan="4" style="text-align: center;">Nėra receptų</td></tr>';
-        return;
-    }
-    
-    table.innerHTML = '';
-    
-    recipes.forEach(recipe => {
-        const row = document.createElement('tr');
-        
-        row.innerHTML = `
-            <td>${recipe.title || 'Untitled'}</td>
-            <td>${recipe.categories && recipe.categories.length ? recipe.categories.join(', ') : '-'}</td>
-            <td>${recipe.created_at || '-'}</td>
-            <td>
-                <div class="action-buttons">
-                    <button type="button" class="action-btn edit-btn" onclick="editRecipe('${recipe.id}')"><i class="fas fa-edit"></i></button>
-                    <button type="button" class="action-btn delete-btn" onclick="showDeleteConfirmation('${recipe.id}', 'recipe')"><i class="fas fa-trash"></i></button>
-                </div>
-            </td>
-        `;
-        
-        table.appendChild(row);
-    });
-}
 
-// Function to update recent comments table
-function updateRecentComments(comments) {
-    const table = document.querySelector('#page-dashboard .admin-section:nth-child(3) tbody');
-    if (!table) return;
-    
-    if (comments.length === 0) {
-        table.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nėra komentarų</td></tr>';
-        return;
-    }
-    
-    table.innerHTML = '';
-    
-    comments.forEach(comment => {
-        const row = document.createElement('tr');
-        
-        row.innerHTML = `
-            <td>${comment.author || 'Anonymous'}</td>
-            <td>${comment.content ? comment.content.substring(0, 50) + (comment.content.length > 50 ? '...' : '') : '-'}</td>
-            <td>${comment.recipe_title || '-'}</td>
-            <td>${comment.created_at || '-'}</td>
-            <td>
-                <div class="action-buttons">
-                    <button type="button" class="action-btn view-btn" onclick="viewComment('${comment.id}')"><i class="fas fa-eye"></i></button>
-                    <button type="button" class="action-btn delete-btn" onclick="showDeleteConfirmation('${comment.id}', 'comment')"><i class="fas fa-trash"></i></button>
-                </div>
-            </td>
-        `;
-        
-        table.appendChild(row);
-    });
-}
 
-// Function to load fallback dashboard data for demo
-function loadFallbackDashboardData() {
-    // Update widget counts
-    updateDashboardWidgets({
-        recipes: { total: 15 },
-        comments: { total: 8 },
-        media: { total: 25 }
-    });
-    
-    // Update recent recipes
-    updateRecentRecipes([
-        {
-            id: 'demo1',
-            title: 'Šaltibarščiai: vasaros skonis dubenyje',
-            categories: ['Sriubos', 'Vasaros patiekalai'],
-            created_at: '2025-05-03 14:32:15'
-        },
-        {
-            id: 'demo2',
-            title: 'Kugelis (bulvių plokštainis)',
-            categories: ['Bulvės', 'Iš močiutės virtuvės'],
-            created_at: '2025-03-15 10:45:22'
-        },
-        {
-            id: 'demo3',
-            title: 'Medaus pyragas',
-            categories: ['Desertai'],
-            created_at: '2025-02-28 16:12:45'
-        }
-    ]);
-    
-    // Update recent comments
-    updateRecentComments([
-        {
-            id: 'comment1',
-            author: 'Laura',
-            content: 'Mano močiutė visada dėdavo truputį krienų į šaltibarščius. Tai suteikia ypatingą aštrumą!',
-            recipe_title: 'Šaltibarščiai: vasaros skonis dubenyje',
-            created_at: '2025-05-03 16:42:10'
-        },
-        {
-            id: 'comment2',
-            author: 'Tomas',
-            content: 'Kefyrą galima pakeisti graikišku jogurtu?',
-            recipe_title: 'Šaltibarščiai: vasaros skonis dubenyje',
-            created_at: '2025-05-04 09:15:33'
-        }
-    ]);
-}
+
 
 // Function to load recipes
 function loadRecipes() {
@@ -1192,71 +1040,7 @@ function tryFetchRequest(formData) {
     });
 }
 
-// Function to edit recipe
-function editRecipe(recipeId) {
-    // Fetch recipe data
-    fetch(`admin-connector.php?action=get_recipe&id=${recipeId}`)
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Failed to fetch recipe data');
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            // Create edit form by cloning add recipe form
-            const addRecipePage = document.getElementById('page-add-recipe');
-            const editRecipePage = document.getElementById('page-edit-recipe');
-            
-            if (!editRecipePage) {
-                // Create edit recipe page if it doesn't exist
-                const newEditPage = document.createElement('div');
-                newEditPage.id = 'page-edit-recipe';
-                newEditPage.className = 'admin-page';
-                newEditPage.style.display = 'none';
-                newEditPage.innerHTML = addRecipePage.innerHTML;
-                
-                // Change title
-                const title = newEditPage.querySelector('.admin-section-title');
-                if (title) {
-                    title.textContent = 'Redaguoti receptą';
-                }
-                
-                // Add ID field
-                const form = newEditPage.querySelector('form');
-                if (form) {
-                    const idField = document.createElement('input');
-                    idField.type = 'hidden';
-                    idField.name = 'id';
-                    idField.id = 'recipe-id';
-                    form.appendChild(idField);
-                    
-                    // Change submit button
-                    const submitButton = form.querySelector('.submit-button');
-                    if (submitButton) {
-                        submitButton.textContent = 'Atnaujinti receptą';
-                        submitButton.onclick = updateRecipe;
-                    }
-                }
-                
-                // Add to DOM
-                addRecipePage.parentNode.appendChild(newEditPage);
-            }
-            
-            // Populate form fields
-            populateRecipeForm(data.data);
-            
-            // Show edit page
-            showAdminPage('edit-recipe');
-        } else {
-            showNotification('Klaida', data.error || 'Failed to get recipe', 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Edit recipe error:', error);
-        showNotification('Klaida', error.message, 'error');
-    });
-}
+
 
 // Function to populate recipe form
 function populateRecipeForm(recipe) {

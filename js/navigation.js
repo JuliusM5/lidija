@@ -221,11 +221,22 @@ function loadCategory(categoryName) {
         return;
     }
     
-    // Update the category page content
-    updateCategoryPageContent(categoryPage, categoryName);
-    
-    // Make sure any placeholders are properly loaded
-    replacePlaceholders();
+    // Fetch category data from server
+    fetch(`api/categories.php?name=${encodeURIComponent(categoryName)}`)
+        .then(response => response.json())
+        .then(categoryData => {
+            updateCategoryPageContent(categoryPage, categoryName, categoryData);
+        })
+        .catch(error => {
+            console.error('Error loading category data:', error);
+            contentMain.innerHTML = `
+                <div class="error-message">
+                    <h2>Klaida!</h2>
+                    <p>Nepavyko užkrauti kategorijos: ${categoryName}</p>
+                    <p>Prašome bandyti vėliau.</p>
+                </div>
+            `;
+        });
 }
 
 // Function to create a category page
@@ -241,27 +252,7 @@ function createCategoryPage() {
 }
 
 // Function to update category page content
-function updateCategoryPageContent(categoryPage, categoryName) {
-    // Set up category descriptions
-    const descriptions = {
-        'Gėrimai ir kokteiliai': 'Gardūs, gaivūs ir įdomūs gėrimai bei kokteiliai kiekvienai progai.',
-        'Desertai': 'Saldūs gardumynai, pyragai ir deserai jūsų malonumui.',
-        'Sriubos': 'Šiltos, gaivios ir maistingos sriubos visais metų laikais.',
-        'Užkandžiai': 'Greiti ir skanūs užkandžiai vakarėliams ar kasdieniam malonumui.',
-        'Varškė': 'Įvairūs receptai su varške - nuo desertų iki pagrindinio patiekalo.',
-        'Kiaušiniai': 'Kūrybiški ir gardūs patiekalai, kurių pagrindas - kiaušiniai.',
-        'Daržovės': 'Gardūs ir sveiki daržovių patiekalai visiems metų laikams.',
-        'Bulvės': 'Tradiciniai ir modernūs receptai su bulvėmis - lietuviška klasika.',
-        'Mėsa': 'Gardūs ir sodrūs mėsos patiekalai šventėms ir kasdienai.',
-        'Žuvis ir jūros gėrybės': 'Šviežios žuvies ir jūros gėrybių receptai jūsų stalui.',
-        'Kruopos ir grūdai': 'Maistingi ir skanūs patiekalai iš įvairių kruopų ir grūdų.',
-        'Be glitimo': 'Skanūs receptai tiems, kas vengia glitimo.',
-        'Be laktozės': 'Gardūs patiekalai be laktozės.',
-        'Gamta lėkštėje': 'Receptai su laukiniais augalais ir gamtos dovanomis.',
-        'Iš močiutės virtuvės': 'Tradiciniai lietuviški receptai, perduodami iš kartos į kartą.',
-        'Vasara': 'Vasaros skoniai ir kvapai jūsų virtuvėje.',
-    };
-    
+function updateCategoryPageContent(categoryPage, categoryName, categoryData) {
     // Get content-main container
     const contentMain = categoryPage.querySelector('.content-main');
     if (!contentMain) {
@@ -279,8 +270,8 @@ function updateCategoryPageContent(categoryPage, categoryName) {
     
     // Update header content
     categoryHeader.innerHTML = `
-        <h1 class="category-title">${categoryName}</h1>
-        <p class="category-description">${descriptions[categoryName] || `Atraskite mūsų receptų kolekciją kategorijoje "${categoryName}".`}</p>
+        <h1 class="category-title">${categoryData.title || categoryName}</h1>
+        <p class="category-description">${categoryData.description || ''}</p>
     `;
     
     // Get or create recipe grid
@@ -294,218 +285,23 @@ function updateCategoryPageContent(categoryPage, categoryName) {
         recipeGrid.innerHTML = '';
     }
     
-    // Define recipe titles for each category
-    const recipeTitles = {
-        'Gėrimai ir kokteiliai': [
-            'Uogų limonadas su šviežia mėta',
-            'Aviečių ir braškių smoothie',
-            'Šaltalankių arbata su medumi',
-            'Naminis obuolių sidras',
-            'Gaivus vyšnių kokteilis',
-            'Kakavos gėrimas su cinamonu',
-            'Šiltas vyno gėrimas su prieskoniais',
-            'Aguonų pienas su medumi'
-        ],
-        'Desertai': [
-            'Varškės pyragas su braškėmis',
-            'Šakotis: lietuviškas medžio tortas',
-            'Obuolių pyragas su cinamonu',
-            'Tinginys: šokoladinis desertas',
-            'Žemuogių ledai su mėtų užpilu',
-            'Aguonų vyniotinis',
-            'Medaus tortas',
-            'Juodųjų serbentų keksiukai',
-            'Morenginis tortas su mascarpone',
-            'Karamelinis obuolių pyragas',
-            'Šokoladinis pyragas be miltų',
-            'Citrininiai sausainiai',
-            'Kriaušių ir migdolų pyragas',
-            'Kepti obuoliai su medumi ir cinamonu'
-        ],
-        'Sriubos': [
-            'Šaltibarščiai: vasaros skonis dubenyje',
-            'Burokėlių sriuba su grietine',
-            'Rūgštynių sriuba su kiaušiniu',
-            'Miško grybų sriuba',
-            'Daržovių sriuba su lęšiais',
-            'Tiršta bulvių sriuba su krapais',
-            'Trinta moliūgų sriuba',
-            'Žirnių sriuba su rūkyta mėsa',
-            'Šviežių pomidorų sriuba',
-            'Jūros gėrybių sriuba'
-        ],
-        'Užkandžiai': [
-            'Virtų burokėlių ir varškės užtepėlė',
-            'Grybų pyragėliai',
-            'Silkė su burokėliais',
-            'Marinuoti agurkai su medumi',
-            'Kepta duona su česnaku',
-            'Bulvių skrebutėliai su avokadų kremu',
-            'Varškės spurgytės',
-            'Žolelių keksiukai',
-            'Grietinės padažas su krapais',
-            'Baklažanų ir fetos užtepėlė',
-            'Marinuoti pievagrybiai',
-            'Kepti varškėčiai'
-        ],
-        'Varškė': [
-            'Varškės apkepas su obuoliais',
-            'Varškės blynai su uogienė',
-            'Tinginys su varške',
-            'Varškės spurgytės',
-            'Šalta varškės sriuba',
-            'Varškės ir aguonų pyragas',
-            'Virtinukai su varške'
-        ],
-        'Kiaušiniai': [
-            'Kiaušiniai su grūdėtos varškės ir avokadų kremu',
-            'Kiaušinių omletas su daržovėmis',
-            'Įdaryti kiaušiniai',
-            'Benedikto kiaušiniai',
-            'Kiaušinienė su laukinėmis žolelėmis'
-        ],
-        'Daržovės': [
-            'Keptos morkos su česnaku ir rozmarinu',
-            'Cukinijų ir pomidorų apkepas',
-            'Baklažanų ir sūrio suktinukai',
-            'Troškintos daržovės su grietine',
-            'Burokėlių carpaccio',
-            'Cukinijų blynai',
-            'Kopūstų troškinys',
-            'Orkaitėje keptos daržovės',
-            'Morkų salotos su citrinų sultimis',
-            'Bulvių ir porų apkepas',
-            'Žiedinių kopūstų košė',
-            'Kepti pievagrybiai su česnaku',
-            'Šparaginių pupelių salotos',
-            'Daržovių užkandis su tzatziki padažu',
-            'Burokėlių salotos su feta',
-            'Žaliosios salotos su saulėgrąžomis'
-        ],
-        'Bulvės': [
-            'Bulvių kukuliai su grietine',
-            'Bulvių košė su krapais',
-            'Orkaitėje keptos bulvės su rozmarinu',
-            'Bulvių plokštainis (kugelis)',
-            'Virtų bulvių salotos',
-            'Bulvių kotletai',
-            'Bulvių skrebutėliai su avokadų kremu ir silke',
-            'Bulvių blynai',
-            'Cheeseburger bulvytės'
-        ],
-        'Mėsa': [
-            'Skaniausias keptas viščiukas',
-            'Jautienos troškinys su daržovėmis',
-            'Kiaulienos šašlykai',
-            'Vištienos suktinukai su sūriu',
-            'Kepta antis su obuoliais',
-            'Jautienos kepsnys su žolelių sviestu',
-            'Triušienos troškinys',
-            'Kiaulienos išpjovos kepsnys',
-            'Vištienos salotos su ananasais',
-            'Jautienos maltinukai',
-            'Kepta kiaulienos šoninė',
-            'Vištienos kotletai',
-            'Kepta kalakutiena'
-        ],
-        'Žuvis ir jūros gėrybės': [
-            'Kepta lašiša su citrinomis',
-            'Silkė tradiciškai',
-            'Žuvies kotletai',
-            'Midijos baltojo vyno padaže',
-            'Kepta menkė su daržovėmis',
-            'Krevečių salotos su avokadu'
-        ],
-        'Kruopos ir grūdai': [
-            'Grikių košė su grybais',
-            'Ryžių pudingas su cinamonu',
-            'Perlinių kruopų salotos',
-            'Bolivinės balandos košė su daržovėmis',
-            'Miežinių kruopų sriuba',
-            'Avižinė košė su obuoliais',
-            'Kuskuso salotos su daržovėmis',
-            'Grikių blynai'
-        ],
-        'Be glitimo': [
-            'Migdolų miltų keksiukai',
-            'Grikių blynai be miltų',
-            'Cukinijų makaronai',
-            'Ryžių miltų duona'
-        ],
-        'Be laktozės': [
-            'Kokosų pieno desertas',
-            'Veganiški blynai',
-            'Kokosų pieno sriuba su daržovėmis'
-        ],
-        'Gamta lėkštėje': [
-            'Dilgėlių sriuba',
-            'Kiškio kopūstų salotos',
-            'Beržų sulos gėrimas',
-            'Pienių medus',
-            'Čiobrelių arbata',
-            'Saulėgrąžų daigų salotos',
-            'Ramunėlių užpilas',
-            'Šermukšnių uogienė',
-            'Šaltalankių sirupas',
-            'Erškėtuogių arbata',
-            'Medetkų aliejaus užpilas'
-        ],
-        'Iš močiutės virtuvės': [
-            'Cepelinai su mėsa',
-            'Kugelis (bulvių plokštainis)',
-            'Šaltibarščiai',
-            'Bulviniai vėdarai',
-            'Kastinis',
-            'Skilandis',
-            'Rauginti kopūstai',
-            'Naminė duona',
-            'Kaimiška gira',
-            'Marinuoti grybai',
-            'Kaimiškas paštetas',
-            'Bulvių dešra',
-            'Naminis varškės sūris',
-            'Medaus pyragas',
-            'Kanapių pienas',
-            'Ruginė gira',
-            'Kraujinė dešra',
-            'Kopūstų sriuba'
-        ],
-        'default': [
-            'Įvairūs receptai šioje kategorijoje',
-            'Sezono pasiūlymai',
-            'Skaniausios idėjos šioje kolekcijoje',
-            'Populiarūs receptai',
-            'Nauji atradimai'
-        ]
-    };
-    
-    // Select recipe titles for this category or use default
-    const titles = recipeTitles[categoryName] || recipeTitles['default'];
-    
-    // Generate a consistent number of recipes based on the category count in the sidebar
-    const categoryCountElement = document.querySelector(`.categories-list a[onclick*="${categoryName}"] .category-count`);
-    let recipesCount = 6; // Default count
-    
-    if (categoryCountElement) {
-        const count = parseInt(categoryCountElement.textContent);
-        if (!isNaN(count)) {
-            recipesCount = Math.min(count, titles.length);
-        }
+    // Check if we have recipes
+    if (!categoryData.recipes || categoryData.recipes.length === 0) {
+        recipeGrid.innerHTML = '<p class="no-recipes">Šioje kategorijoje receptų nerasta.</p>';
+        return;
     }
     
     // Add recipes to the grid
-    for (let i = 0; i < recipesCount; i++) {
-        const recipeIndex = i % titles.length;
-        const recipeTitle = titles[recipeIndex];
-        
-        // Create recipe card
+    categoryData.recipes.forEach(recipe => {
         const recipeCard = document.createElement('div');
         recipeCard.className = 'recipe-card';
         
         // Create card content
         const cardContent = document.createElement('a');
-        cardContent.href = '#';
-        cardContent.onclick = function() {
+        cardContent.href = `recipe.php?id=${recipe.id}`;
+        cardContent.onclick = function(e) {
+            e.preventDefault();
+            loadRecipe(recipe.id);
             showPage('recipe-page');
             return false;
         };
@@ -514,16 +310,16 @@ function updateCategoryPageContent(categoryPage, categoryName) {
         const cardImageContainer = document.createElement('div');
         cardImageContainer.className = 'recipe-card-image';
         
-        // Create a placeholder for the image
-        const placeholder = createPlaceholderElement(500, 500, recipeTitle);
-        placeholder.style.width = '100%';
-        placeholder.style.aspectRatio = '1/1';
-        cardImageContainer.appendChild(placeholder);
+        // Create image element
+        const imgElement = document.createElement('img');
+        imgElement.src = recipe.image ? `img/recipes/${recipe.image}` : 'img/recipe-placeholder.jpg';
+        imgElement.alt = recipe.title;
+        cardImageContainer.appendChild(imgElement);
         
         // Create title element
         const cardTitle = document.createElement('div');
         cardTitle.className = 'recipe-card-title';
-        cardTitle.textContent = recipeTitle.toUpperCase();
+        cardTitle.textContent = recipe.title.toUpperCase();
         
         // Assemble card
         cardContent.appendChild(cardImageContainer);
@@ -532,7 +328,7 @@ function updateCategoryPageContent(categoryPage, categoryName) {
         
         // Add to grid
         recipeGrid.appendChild(recipeCard);
-    }
+    });
     
     // Add or update load more button
     let loadMoreContainer = contentMain.querySelector('.load-more-container');
@@ -542,65 +338,115 @@ function updateCategoryPageContent(categoryPage, categoryName) {
         contentMain.appendChild(loadMoreContainer);
     }
     
-    loadMoreContainer.innerHTML = `
-        <a href="#" class="load-more-button">DAUGIAU RECEPTŲ</a>
-    `;
-    
-    // Add event listener to load more button
-    const loadMoreButton = loadMoreContainer.querySelector('.load-more-button');
-    if (loadMoreButton) {
-        loadMoreButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            alert(`Daugiau "${categoryName}" receptų bus įkelta netrukus!`);
-        });
+    if (categoryData.hasMore) {
+        loadMoreContainer.innerHTML = `
+            <a href="#" class="load-more-button">DAUGIAU RECEPTŲ</a>
+        `;
+        
+        // Add event listener to load more button
+        const loadMoreButton = loadMoreContainer.querySelector('.load-more-button');
+        if (loadMoreButton) {
+            loadMoreButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                loadMoreRecipes(categoryName, categoryData.page + 1);
+            });
+        }
+    } else {
+        loadMoreContainer.innerHTML = '';
     }
 }
 
-// Function to create a styled placeholder that matches the website design
-function createPlaceholderElement(width, height, text, isRound = false) {
-    // Create a div element instead of using an external image
-    const placeholder = document.createElement('div');
-    placeholder.className = 'local-placeholder';
-    
-    // Set dimensions
-    placeholder.style.width = width + 'px';
-    placeholder.style.height = height + 'px';
-    
-    // Set border radius if round
-    if (isRound) {
-        placeholder.style.borderRadius = '50%';
-    }
-    
-    // Base styling to match the website
-    placeholder.style.backgroundColor = '#f8f5f1';
-    placeholder.style.display = 'flex';
-    placeholder.style.alignItems = 'center';
-    placeholder.style.justifyContent = 'center';
-    placeholder.style.textAlign = 'center';
-    placeholder.style.padding = '10px';
-    placeholder.style.boxSizing = 'border-box';
-    placeholder.style.fontFamily = '"Source Sans Pro", sans-serif';
-    placeholder.style.overflow = 'hidden';
-    placeholder.style.wordBreak = 'break-word';
-    placeholder.style.color = '#7f4937';
-    placeholder.style.border = '1px solid #e6ddd6';
-    
-    // Create an inner span for the text to have better styling control
-    const textSpan = document.createElement('span');
-    
-    // Format the text
-    textSpan.textContent = text || '#f8f5f1';
-    textSpan.style.opacity = '0.7';
-    textSpan.style.fontSize = width < 150 ? '10px' : '12px';
-    
-    placeholder.appendChild(textSpan);
-    
-    return placeholder;
+// Function to load more recipes for the current category
+function loadMoreRecipes(categoryName, page) {
+    fetch(`api/categories.php?name=${encodeURIComponent(categoryName)}&page=${page}`)
+        .then(response => response.json())
+        .then(moreData => {
+            // Get recipe grid
+            const recipeGrid = document.querySelector('#category-page .recipe-grid');
+            if (!recipeGrid) return;
+            
+            // Add new recipes to the grid
+            moreData.recipes.forEach(recipe => {
+                const recipeCard = document.createElement('div');
+                recipeCard.className = 'recipe-card';
+                
+                // Create card content
+                const cardContent = document.createElement('a');
+                cardContent.href = `recipe.php?id=${recipe.id}`;
+                cardContent.onclick = function(e) {
+                    e.preventDefault();
+                    loadRecipe(recipe.id);
+                    showPage('recipe-page');
+                    return false;
+                };
+                
+                // Create image container
+                const cardImageContainer = document.createElement('div');
+                cardImageContainer.className = 'recipe-card-image';
+                
+                // Create image element
+                const imgElement = document.createElement('img');
+                imgElement.src = recipe.image ? `img/recipes/${recipe.image}` : 'img/recipe-placeholder.jpg';
+                imgElement.alt = recipe.title;
+                cardImageContainer.appendChild(imgElement);
+                
+                // Create title element
+                const cardTitle = document.createElement('div');
+                cardTitle.className = 'recipe-card-title';
+                cardTitle.textContent = recipe.title.toUpperCase();
+                
+                // Assemble card
+                cardContent.appendChild(cardImageContainer);
+                cardContent.appendChild(cardTitle);
+                recipeCard.appendChild(cardContent);
+                
+                // Add to grid
+                recipeGrid.appendChild(recipeCard);
+            });
+            
+            // Update load more button
+            const loadMoreContainer = document.querySelector('#category-page .load-more-container');
+            if (loadMoreContainer) {
+                if (moreData.hasMore) {
+                    loadMoreContainer.innerHTML = `
+                        <a href="#" class="load-more-button">DAUGIAU RECEPTŲ</a>
+                    `;
+                    
+                    // Add event listener to the new load more button
+                    const loadMoreButton = loadMoreContainer.querySelector('.load-more-button');
+                    if (loadMoreButton) {loadMoreButton.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            loadMoreRecipes(categoryName, moreData.page + 1);
+                        });
+                    }
+                } else {
+                    loadMoreContainer.innerHTML = '';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error loading more recipes:', error);
+            const loadMoreContainer = document.querySelector('#category-page .load-more-container');
+            if (loadMoreContainer) {
+                loadMoreContainer.innerHTML = `
+                    <p class="error-message">Klaida kraunant daugiau receptų. Prašome bandyti vėliau.</p>
+                `;
+            }
+        });
 }
 
 // Function to load recipe page content
 function loadRecipePage() {
     console.log('Loading recipe page content');
+    
+    // Get recipe ID from URL if available
+    const urlParams = new URLSearchParams(window.location.search);
+    const recipeId = urlParams.get('id');
+    
+    if (!recipeId) {
+        console.error('Recipe ID not provided');
+        return;
+    }
     
     const recipePage = document.getElementById('recipe-page');
     if (!recipePage) {
@@ -608,9 +454,9 @@ function loadRecipePage() {
         return;
     }
     
-    // Check if the page is already loaded
-    if (recipePage.querySelector('.recipe-main')) {
-        console.log('Recipe page already loaded');
+    // Check if the page is already loaded with the correct recipe
+    if (recipePage.dataset.recipeId === recipeId) {
+        console.log('Recipe already loaded');
         return;
     }
     
@@ -630,37 +476,22 @@ function loadRecipePage() {
     // Add content main
     const contentMain = document.createElement('div');
     contentMain.className = 'content-main';
+    contentMain.innerHTML = '<div class="loading">Kraunama...</div>';
     
-    // Try to load the recipe template from the server
-    fetch('pages/recipe-template.html')
+    // Fetch recipe data
+    fetch(`api/recipes.php?id=${recipeId}`)
         .then(response => {
             if (!response.ok) {
-                throw new Error('Failed to load recipe template');
+                throw new Error('Failed to load recipe');
             }
-            return response.text();
+            return response.json();
         })
-        .then(html => {
-            contentMain.innerHTML = html;
+        .then(recipeData => {
+            // Update content with recipe data
+            contentMain.innerHTML = generateRecipeHTML(recipeData);
             
-            // Replace any placeholders with local placeholders
-            replaceExternalPlaceholders(contentMain);
-            
-            // Create sidebar
-            const sidebar = homePage.querySelector('.sidebar').cloneNode(true);
-            mainContent.appendChild(contentMain);
-            mainContent.appendChild(sidebar);
-            
-            // Add footer clone
-            const footer = homePage.querySelector('footer').cloneNode(true);
-            
-            // Clear page and add elements
-            recipePage.innerHTML = '';
-            recipePage.appendChild(header);
-            recipePage.appendChild(mainContent);
-            recipePage.appendChild(footer);
-            
-            // Set up dropdown menus
-            setupDropdownMenus(recipePage);
+            // Mark the page with the loaded recipe ID
+            recipePage.dataset.recipeId = recipeId;
             
             // Set up event listeners on the new elements
             setupRecipePageEventListeners(recipePage);
@@ -668,39 +499,210 @@ function loadRecipePage() {
             console.log('Recipe page loaded successfully');
         })
         .catch(error => {
-            console.error('Error loading recipe template:', error);
-            // Fallback content if fetch fails
-            contentMain.innerHTML = createFallbackRecipeContent();
-            
-            // Create sidebar
-            const sidebar = homePage.querySelector('.sidebar').cloneNode(true);
-            mainContent.appendChild(contentMain);
-            mainContent.appendChild(sidebar);
-            
-            // Add footer clone
-            const footer = homePage.querySelector('footer').cloneNode(true);
-            
-            // Clear page and add elements
-            recipePage.innerHTML = '';
-            recipePage.appendChild(header);
-            recipePage.appendChild(mainContent);
-            recipePage.appendChild(footer);
-            
-            // Set up dropdown menus
-            setupDropdownMenus(recipePage);
-            
-            // Set up event listeners
-            setupRecipePageEventListeners(recipePage);
+            console.error('Error loading recipe:', error);
+            contentMain.innerHTML = `
+                <div class="error-message">
+                    <h2>Klaida!</h2>
+                    <p>Nepavyko užkrauti recepto.</p>
+                    <p>Prašome bandyti vėliau.</p>
+                </div>
+            `;
         });
+    
+    // Create sidebar
+    const sidebar = homePage.querySelector('.sidebar').cloneNode(true);
+    mainContent.appendChild(contentMain);
+    mainContent.appendChild(sidebar);
+    
+    // Add footer clone
+    const footer = homePage.querySelector('footer').cloneNode(true);
+    
+    // Clear page and add elements
+    recipePage.innerHTML = '';
+    recipePage.appendChild(header);
+    recipePage.appendChild(mainContent);
+    recipePage.appendChild(footer);
+    
+    // Set up dropdown menus
+    setupDropdownMenus(recipePage);
+}
+
+// Function to generate recipe HTML from data
+function generateRecipeHTML(recipe) {
+    // Format date
+    const date = new Date(recipe.created_at);
+    const formattedDate = `${date.toLocaleDateString('lt-LT', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+    
+    // Generate categories HTML
+    const categoriesHTML = recipe.categories.map(category => 
+        `<a href="#" onclick="showPage('category-page'); loadCategory('${category}'); return false;">${category}</a>`
+    ).join(' • ');
+    
+    // Generate tags HTML
+    const tagsHTML = recipe.tags.map(tag => 
+        `<a href="#" onclick="showPage('category-page'); loadCategory('${tag}'); return false;">&#8203;#${tag}</a>`
+    ).join(' ');
+    
+    // Generate ingredients HTML
+    const ingredientsHTML = recipe.ingredients.map(ingredient => 
+        `<li>${ingredient}</li>`
+    ).join('');
+    
+    // Generate steps HTML
+    const stepsHTML = recipe.steps.map(step => 
+        `<li>${step}</li>`
+    ).join('');
+    
+    // Generate comments HTML
+    let commentsHTML = '';
+    if (recipe.comments && recipe.comments.length > 0) {
+        commentsHTML = recipe.comments.map(comment => {
+            let replyHTML = '';
+            if (comment.replies && comment.replies.length > 0) {
+                replyHTML = comment.replies.map(reply => {
+                    return `
+                        <div class="comment-reply">
+                            <div class="comment">
+                                <div class="comment-header">
+                                    <img src="${reply.author_image || 'img/default-avatar.jpg'}" alt="${reply.author}" class="comment-avatar">
+                                    <div class="comment-info">
+                                        <div class="comment-author">${reply.author}</div>
+                                        <div class="comment-date">${new Date(reply.created_at).toLocaleDateString('lt-LT', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+                                    </div>
+                                </div>
+                                <div class="comment-content">
+                                    <p>${reply.content}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            return `
+                <div class="comment">
+                    <div class="comment-header">
+                        <img src="${comment.author_image || 'img/default-avatar.jpg'}" alt="${comment.author}" class="comment-avatar">
+                        <div class="comment-info">
+                            <div class="comment-author">${comment.author}</div>
+                            <div class="comment-date">${new Date(comment.created_at).toLocaleDateString('lt-LT', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+                        </div>
+                    </div>
+                    <div class="comment-content">
+                        <p>${comment.content}</p>
+                    </div>
+                    <a href="#" class="comment-reply-link">Atsakyti</a>
+                    ${replyHTML}
+                </div>
+            `;
+        }).join('');
+    } else {
+        commentsHTML = '<p>Komentarų dar nėra. Būk pirmas!</p>';
+    }
+    
+    // Create full HTML
+    return `
+        <div class="recipe-main">
+            <div class="recipe-header">
+                <h1 class="recipe-title">${recipe.title}</h1>
+                <div class="recipe-meta">
+                    <span>${formattedDate}</span>
+                    <span>•</span>
+                    <span>${categoriesHTML}</span>
+                </div>
+            </div>
+            
+            <div class="recipe-image">
+                <img src="${recipe.image ? `img/recipes/${recipe.image}` : 'img/recipe-placeholder.jpg'}" alt="${recipe.title}">
+            </div>
+            
+            <p class="recipe-intro">${recipe.intro}</p>
+            
+            <div class="recipe-content">
+                ${recipe.content || ''}
+                
+                <div class="recipe-box">
+                    <h3>${recipe.title}</h3>
+                    
+                    <div class="recipe-time">
+                        <div class="recipe-time-item">
+                            <span class="time-label">Paruošimas</span>
+                            <span class="time-value">${recipe.prep_time} min</span>
+                        </div>
+                        <div class="recipe-time-item">
+                            <span class="time-label">Gaminimas</span>
+                            <span class="time-value">${recipe.cook_time} min</span>
+                        </div>
+                        <div class="recipe-time-item">
+                            <span class="time-label">Porcijos</span>
+                            <span class="time-value">${recipe.servings}</span>
+                        </div>
+                    </div>
+                    
+                    <h4>Ingredientai</h4>
+                    <ul>
+                        ${ingredientsHTML}
+                    </ul>
+                    
+                    <h4>Gaminimo būdas</h4>
+                    <ol>
+                        ${stepsHTML}
+                    </ol>
+                    
+                    ${recipe.notes ? `<h4>Pastabos</h4><p>${recipe.notes}</p>` : ''}
+                </div>
+            </div>
+            
+            <div class="recipe-footer">
+                <div class="recipe-tags">
+                    ${tagsHTML}
+                </div>
+                <div class="recipe-share">
+                    <span>Dalintis:</span>
+                    <a href="https://facebook.com/share?url=${encodeURIComponent(window.location.href)}" target="_blank"><i class="fa fa-facebook"></i></a>
+                    <a href="https://pinterest.com/pin/create/button/?url=${encodeURIComponent(window.location.href)}&media=${encodeURIComponent(recipe.image ? window.location.origin + '/img/recipes/' + recipe.image : '')}&description=${encodeURIComponent(recipe.title)}" target="_blank"><i class="fa fa-pinterest"></i></a>
+                    <a href="mailto:?subject=${encodeURIComponent(recipe.title)}&body=${encodeURIComponent(window.location.href)}" target="_blank"><i class="fa fa-envelope"></i></a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Comments Section -->
+        <div class="comments-section">
+            <h3 class="comments-title">Komentarai (${recipe.comments ? recipe.comments.length : 0})</h3>
+            
+            ${commentsHTML}
+            
+            <!-- Comment Form -->
+            <div class="comment-form">
+                <h3 class="comment-form-title">Palikite komentarą</h3>
+                <form id="recipe-comment-form" data-recipe-id="${recipe.id}">
+                    <div class="form-group">
+                        <label for="name">Vardas</label>
+                        <input type="text" id="name" name="name" class="form-control" required autocomplete="name">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">El. paštas (nebus skelbiamas)</label>
+                        <input type="email" id="email" name="email" class="form-control" required autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="comment">Komentaras</label>
+                        <textarea id="comment" name="comment" class="form-control" required></textarea>
+                    </div>
+                    <button type="submit" class="submit-button">Paskelbti komentarą</button>
+                </form>
+            </div>
+        </div>
+    `;
 }
 
 // Function to set up event listeners on the recipe page
 function setupRecipePageEventListeners(recipePage) {
     // Set up comment form submissions
-    const commentForm = recipePage.querySelector('.comment-form form');
+    const commentForm = recipePage.querySelector('#recipe-comment-form');
     if (commentForm) {
         commentForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            const recipeId = this.getAttribute('data-recipe-id');
             const nameInput = this.querySelector('#name');
             const emailInput = this.querySelector('#email');
             const commentInput = this.querySelector('#comment');
@@ -708,10 +710,33 @@ function setupRecipePageEventListeners(recipePage) {
             if (nameInput && nameInput.value && 
                 emailInput && emailInput.value && isValidEmail(emailInput.value) && 
                 commentInput && commentInput.value) {
-                alert('Ačiū už komentarą! Jis bus paskelbtas po peržiūros.');
-                nameInput.value = '';
-                emailInput.value = '';
-                commentInput.value = '';
+                
+                // Submit comment to server
+                const formData = new FormData();
+                formData.append('recipe_id', recipeId);
+                formData.append('author', nameInput.value);
+                formData.append('email', emailInput.value);
+                formData.append('content', commentInput.value);
+                
+                fetch('api/comments.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Ačiū už komentarą! Jis bus paskelbtas po peržiūros.');
+                        nameInput.value = '';
+                        emailInput.value = '';
+                        commentInput.value = '';
+                    } else {
+                        alert('Klaida siunčiant komentarą: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error posting comment:', error);
+                    alert('Klaida siunčiant komentarą. Prašome bandyti vėliau.');
+                });
             } else {
                 alert('Prašome užpildyti visus būtinus laukus teisingai.');
             }
@@ -733,10 +758,13 @@ function setupRecipePageEventListeners(recipePage) {
             }
             
             // Otherwise, create a new reply form
+            const recipeId = recipePage.dataset.recipeId;
+            const commentId = comment.dataset.commentId; // Need to add data-comment-id to comments
+            
             replyForm = document.createElement('div');
             replyForm.className = 'reply-form';
             replyForm.innerHTML = `
-                <form class="comment-form">
+                <form class="comment-form" data-recipe-id="${recipeId}" data-parent-id="${commentId}">
                     <h4>Atsakyti į komentarą</h4>
                     <div class="form-group">
                         <label for="reply-name">Vardas</label>
@@ -762,8 +790,44 @@ function setupRecipePageEventListeners(recipePage) {
             const form = replyForm.querySelector('form');
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
-                alert('Ačiū už komentarą! Jis bus paskelbtas po peržiūros.');
-                replyForm.style.display = 'none';
+                const recipeId = this.getAttribute('data-recipe-id');
+                const parentId = this.getAttribute('data-parent-id');
+                const nameInput = this.querySelector('#reply-name');
+                const emailInput = this.querySelector('#reply-email');
+                const commentInput = this.querySelector('#reply-comment');
+                
+                if (nameInput && nameInput.value && 
+                    emailInput && emailInput.value && isValidEmail(emailInput.value) && 
+                    commentInput && commentInput.value) {
+                    
+                    // Submit reply to server
+                    const formData = new FormData();
+                    formData.append('recipe_id', recipeId);
+                    formData.append('parent_id', parentId);
+                    formData.append('author', nameInput.value);
+                    formData.append('email', emailInput.value);
+                    formData.append('content', commentInput.value);
+                    
+                    fetch('api/comments.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Ačiū už komentarą! Jis bus paskelbtas po peržiūros.');
+                            replyForm.style.display = 'none';
+                        } else {
+                            alert('Klaida siunčiant komentarą: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error posting reply:', error);
+                        alert('Klaida siunčiant komentarą. Prašome bandyti vėliau.');
+                    });
+                } else {
+                    alert('Prašome užpildyti visus būtinus laukus teisingai.');
+                }
             });
             
             // Add cancel handler
@@ -777,7 +841,6 @@ function setupRecipePageEventListeners(recipePage) {
     // Set up category links
     const categoryLinks = recipePage.querySelectorAll('.recipe-tags a, .recipe-meta a');
     categoryLinks.forEach(link => {
-        // Check if onclick already set
         if (!link.getAttribute('onclick')) {
             link.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -787,221 +850,6 @@ function setupRecipePageEventListeners(recipePage) {
             });
         }
     });
-}
-
-// Function to replace any external placeholder images with local placeholders
-function replaceExternalPlaceholders(container) {
-    const images = container.querySelectorAll('img');
-    images.forEach(img => {
-        const src = img.getAttribute('src');
-        if (src && (src.includes('placeholder.com') || src.includes('via.placeholder.com'))) {
-            // Extract dimensions from placeholder URL
-            let width = 500;
-            let height = 300;
-            const text = img.alt || '';
-            
-            // Try to extract dimensions from src
-            const dimensionsMatch = src.match(/(\d+)x(\d+)/);
-            if (dimensionsMatch && dimensionsMatch.length === 3) {
-                width = parseInt(dimensionsMatch[1]);
-                height = parseInt(dimensionsMatch[2]);
-            }
-            
-            // Create local placeholder
-            const placeholder = createPlaceholderElement(width, height, text);
-            placeholder.style.width = '100%';
-            
-            // Replace image with placeholder
-            if (img.parentNode) {
-                img.parentNode.replaceChild(placeholder, img);
-            }
-        }
-    });
-}
-
-// Function to replace placeholder images
-function replacePlaceholders() {
-    // First handle images with src starting with img/placeholders/
-    const placeholderImages = document.querySelectorAll('img[src^="img/placeholders/"]');
-    
-    placeholderImages.forEach(img => {
-        // Extract filename from path
-        const filename = img.src.split('/').pop();
-        
-        // Set dimensions based on image type and class
-        let width, height, isRound = false;
-        
-        if (img.classList.contains('popular-post-img')) {
-            width = 60;
-            height = 60;
-            isRound = true; // Popular posts are round
-        } else if (img.classList.contains('about-me-img')) {
-            width = 120;
-            height = 120;
-            isRound = true;
-        } else if (img.parentElement && img.parentElement.classList.contains('latest-post-image')) {
-            width = 200;
-            height = 200;
-        } else if (filename.startsWith('recipe')) {
-            width = 500;
-            height = 500;
-        } else if (filename.startsWith('popular')) {
-            width = 60;
-            height = 60;
-            isRound = true;
-        } else if (filename.startsWith('profile')) {
-            width = 200;
-            height = 200;
-            isRound = true;
-        } else {
-            width = 200;
-            height = 200;
-        }
-        
-        // Extract alt text
-        const altText = img.alt || filename;
-        
-        // Try to load actual images
-        img.addEventListener('error', function() {
-            // Image failed to load, replace with local placeholder div
-            const placeholder = createPlaceholderElement(width, height, altText, isRound);
-            
-            // Add the same classes as the image to maintain styling
-            if (this.className) {
-                placeholder.className += ' ' + this.className;
-            }
-            
-            if (this.parentNode) {
-                this.parentNode.replaceChild(placeholder, this);
-            }
-        });
-        
-        // Force error if image is already broken
-        if (img.complete && img.naturalWidth === 0) {
-            img.dispatchEvent(new Event('error'));
-        }
-    });
-    
-    // Also handle any API placeholders (if present)
-    const apiPlaceholders = document.querySelectorAll('img[src^="/api/placeholder/"]');
-    
-    apiPlaceholders.forEach(img => {
-        const src = img.getAttribute('src');
-        const dimensions = src.match(/\/(\d+)\/(\d+)/);
-        
-        if (dimensions && dimensions.length === 3) {
-            const width = dimensions[1];
-            const height = dimensions[2];
-            const altText = img.alt || '';
-            
-            // Replace with placeholder div
-            const placeholder = createPlaceholderElement(width, height, altText);
-            if (img.className) {
-                placeholder.className += ' ' + img.className;
-            }
-            
-            img.parentNode.replaceChild(placeholder, img);
-        }
-    });
-}
-
-// Helper function to validate email
-function isValidEmail(email) {
-    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(String(email).toLowerCase());
-}
-
-// Create fallback recipe content
-function createFallbackRecipeContent() {
-    return `
-        <div class="recipe-main">
-            <div class="recipe-header">
-                <h1 class="recipe-title">Šaltibarščiai: vasaros skonis dubenyje</h1>
-                <div class="recipe-meta">
-                    <span>Gegužės 3, 2025</span>
-                    <span>•</span>
-                    <span><a href="#" onclick="showPage('category-page'); loadCategory('Sriubos'); return false;">Sriubos</a></span>
-                    <span>•</span>
-                    <span>Vasaros patiekalai</span>
-                </div>
-            </div>
-            
-            <div class="recipe-image">
-                <div class="local-placeholder" style="width:100%;height:500px;display:flex;align-items:center;justify-content:center;background-color:#f8f5f1;color:#7f4937;border:1px solid #e6ddd6;">
-                    <span style="opacity:0.7;font-size:12px;">Šaltibarščiai</span>
-                </div>
-            </div>
-            
-            <p class="recipe-intro">Ką tik prasidėjus šiltajam sezonui, lietuviškoje virtuvėje atsiranda vienas ryškiausių patiekalų – šaltibarščiai. Ši šalta, ryškiai rožinė sriuba yra tapusi Lietuvos vasaros simboliu ir mano vaikystės atsiminimų dalimi.</p>
-            
-            <div class="recipe-content">
-                <p>Kai buvau maža, mama visada žinodavo, kad atėjo laikas gaminti šaltibarščius, kai termometras pakildavo virš 20 laipsnių. Virtuvėje pasklisdavo žemiškas virtų burokėlių kvapas, o aš su didžiausiu susidomėjimu stebėdavau, kaip raudonieji burokėliai, susijungę su baltu kefyru, sukurdavo tą nepakartojamą, ryškiai rožinę spalvą.</p>
-                
-                <div class="recipe-box">
-                    <h3>Šaltibarščiai</h3>
-                    
-                    <div class="recipe-time">
-                        <div class="recipe-time-item">
-                            <span class="time-label">Paruošimas</span>
-                            <span class="time-value">20 min</span>
-                        </div>
-                        <div class="recipe-time-item">
-                            <span class="time-label">Atvėsinimas</span>
-                            <span class="time-value">2 val</span>
-                        </div>
-                        <div class="recipe-time-item">
-                            <span class="time-label">Porcijos</span>
-                            <span class="time-value">4</span>
-                        </div>
-                    </div>
-                    
-                    <h4>Ingredientai</h4>
-                    <ul>
-                        <li>500 ml kefyro</li>
-                        <li>2-3 vidutinio dydžio virti burokėliai (apie 300g)</li>
-                        <li>1 didelis agurkas</li>
-                        <li>3-4 laiškiniai svogūnai</li>
-                        <li>Didelis kuokštas šviežių krapų (apie 30g)</li>
-                        <li>2 kietai virti kiaušiniai</li>
-                        <li>Druskos ir pipirų pagal skonį</li>
-                        <li>Žiupsnelis citrinų sulčių (nebūtina)</li>
-                        <li>500g mažų bulvių patiekimui</li>
-                    </ul>
-                    
-                    <h4>Gaminimo būdas</h4>
-                    <ol>
-                        <li>Kietai išvirkite kiaušinius (apie 9 minutes). Atvėsinkite po šaltu vandeniu, nulupkite ir atidėkite.</li>
-                        <li>Jei naudojate šviežius burokėlius, nulupkite ir virkite juos iki minkštumo (apie 40-50 minučių), tada visiškai atvėsinkite.</li>
-                        <li>Smulkiai sutarkuokite atvėsusius burokėlius į didelį dubenį.</li>
-                        <li>Smulkiai supjaustykite agurką. Sukapokite laiškinius svogūnus ir šviežius krapus.</li>
-                        <li>Į tarkuotus burokėlius sudėkite agurką, laiškinius svogūnus ir didžiąją dalį krapų (šiek tiek pasilikite papuošimui).</li>
-                        <li>Supilkite kefyrą į dubenį ir gerai išmaišykite. Jei mišinys per tirštas, įpilkite šiek tiek šalto vandens.</li>
-                        <li>Pagardinkite druska ir pipirais pagal skonį. Jei norite šiek tiek rūgštumo, įlašinkite citrinų sulčių.</li>
-                        <li>Atvėsinkite sriubą šaldytuve bent 2 valandas, kad skoniai susijungtų, o sriuba taptų tinkamai šalta.</li>
-                        <li>Kol sriuba vėsta, išvirkite bulves su žiupsneliu druskos, kol jos taps minkštos. Nusausinkite ir laikykite šiltai.</li>
-                        <li>Prieš patiekiant, supjaustykite kietai virtus kiaušinius.</li>
-                        <li>Sriubą pilkite į dubenėlius, į kiekvieną įdėkite šiek tiek supjaustytų kiaušinių ir pabarstykite likusiais krapais.</li>
-                        <li>Patiekite su karštomis virtomis bulvėmis.</li>
-                    </ol>
-                </div>
-            </div>
-            
-            <div class="recipe-footer">
-                <div class="recipe-tags">
-                    <a href="#" onclick="showPage('category-page'); loadCategory('Vasara'); return false;">&#8203;#vasara</a>
-                    <a href="#" onclick="showPage('category-page'); loadCategory('Sriubos'); return false;">&#8203;#sriubos</a>
-                    <a href="#" onclick="showPage('category-page'); loadCategory('Daržovės'); return false;">&#8203;#burokėliai</a>
-                    <a href="#" onclick="showPage('category-page'); loadCategory('Iš močiutės virtuvės'); return false;">&#8203;#tradiciniaireceptai</a>
-                </div>
-                <div class="recipe-share">
-                    <span>Dalintis:</span>
-                    <a href="#"><i class="fa fa-facebook"></i></a>
-                    <a href="#"><i class="fa fa-pinterest"></i></a>
-                    <a href="#"><i class="fa fa-instagram"></i></a>
-                </div>
-            </div>
-        </div>
-    `;
 }
 
 // Function to set up navigation handlers
@@ -1039,15 +887,37 @@ function setupNavigationHandlers(container = document) {
     });
 }
 
+// Helper function to validate email
+function isValidEmail(email) {
+    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+}
+
 // Check for URL parameters on page load
 function checkUrlParameters() {
     const urlParams = new URLSearchParams(window.location.search);
     const category = urlParams.get('category');
+    const recipeId = urlParams.get('id');
     
-    if (category) {
+    if (recipeId) {
+        // If there's a recipe ID, load that recipe
+        loadRecipe(recipeId);
+        showPage('recipe-page');
+    } else if (category) {
         // If there's a category parameter, load that category
         loadCategory(category);
     }
+}
+
+// Function to load a specific recipe by ID
+function loadRecipe(recipeId) {
+    // Redirect to the recipe page with the recipe ID as a parameter
+    // This will be handled by the loadRecipePage function
+    recipePage = document.getElementById('recipe-page');
+    if (recipePage) {
+        recipePage.dataset.recipeId = recipeId;
+    }
+    showPage('recipe-page');
 }
 
 // Execute on page load
@@ -1066,9 +936,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Set up navigation handlers
     setupNavigationHandlers();
-    
-    // Check for and replace any placeholder images
-    replacePlaceholders();
     
     // Check for URL parameters
     checkUrlParameters();

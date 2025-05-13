@@ -1,15 +1,11 @@
 <?php
 /**
- * Admin Connector - Complete PHP Backend for the Šaukštas Meilės Admin Panel
+ * Admin Connector - PHP Backend for the Šaukštas Meilės Admin Panel
  */
 
-// Set error reporting for debugging
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-// Log all requests to help diagnose issues
-$requestLog = date('Y-m-d H:i:s') . " - " . $_SERVER['REQUEST_METHOD'] . " - " . $_SERVER['REQUEST_URI'] . "\n";
-file_put_contents('request_log.txt', $requestLog, FILE_APPEND);
+// Set error reporting for production environment
+error_reporting(0);
+ini_set('display_errors', 0);
 
 // Define constants
 define('SITE_ROOT', __DIR__);
@@ -57,10 +53,6 @@ $action = isset($_GET['action']) ? $_GET['action'] : '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // For POST, use $_POST data
     $requestData = $_POST;
-    
-    // Log POST data for debugging
-    file_put_contents('post_data.txt', print_r($_POST, true) . "\n", FILE_APPEND);
-    file_put_contents('post_data.txt', print_r($_FILES, true) . "\n", FILE_APPEND);
 } else if ($_SERVER['REQUEST_METHOD'] === 'GET' && strpos($action, 'add_') === 0) {
     // Special case: Allow add_recipe via GET for workaround
     $requestData = $_GET;
@@ -76,10 +68,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // For other methods like GET, use $_GET
     $requestData = $_GET;
 }
-
-// Log action and request data
-$actionLog = "Action: $action - Request Data: " . print_r($requestData, true) . "\n";
-file_put_contents('request_log.txt', $actionLog, FILE_APPEND);
 
 // Router - Process request based on action
 switch ($action) {
@@ -99,14 +87,28 @@ switch ($action) {
         handleGetRecipe();
         break;
     case 'add_recipe':
-        // Bypass login check for testing
-        handleAddRecipe();
+        // Ensure user is authenticated
+        if (isLoggedIn()) {
+            handleAddRecipe();
+        } else {
+            sendResponse(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
         break;
     case 'update_recipe':
-        handleUpdateRecipe();
+        // Ensure user is authenticated
+        if (isLoggedIn()) {
+            handleUpdateRecipe();
+        } else {
+            sendResponse(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
         break;
     case 'delete_recipe':
-        handleDeleteRecipe();
+        // Ensure user is authenticated
+        if (isLoggedIn()) {
+            handleDeleteRecipe();
+        } else {
+            sendResponse(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
         break;
     case 'get_comments':
         handleGetComments();
@@ -115,55 +117,54 @@ switch ($action) {
         handleGetComment();
         break;
     case 'update_comment':
-        handleUpdateComment();
+        // Ensure user is authenticated
+        if (isLoggedIn()) {
+            handleUpdateComment();
+        } else {
+            sendResponse(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
         break;
     case 'delete_comment':
-        handleDeleteComment();
+        // Ensure user is authenticated
+        if (isLoggedIn()) {
+            handleDeleteComment();
+        } else {
+            sendResponse(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
         break;
     case 'get_about':
         handleGetAbout();
         break;
     case 'update_about':
-        handleUpdateAbout();
+        // Ensure user is authenticated
+        if (isLoggedIn()) {
+            handleUpdateAbout();
+        } else {
+            sendResponse(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
         break;
     case 'get_media':
         handleGetMedia();
         break;
     case 'upload_media':
-        handleUploadMedia();
+        // Ensure user is authenticated
+        if (isLoggedIn()) {
+            handleUploadMedia();
+        } else {
+            sendResponse(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
         break;
     case 'delete_media':
-        handleDeleteMedia();
-        break;
-    case 'test':
-        // Test endpoint for debugging
-        handleTest();
+        // Ensure user is authenticated
+        if (isLoggedIn()) {
+            handleDeleteMedia();
+        } else {
+            sendResponse(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
         break;
     default:
         sendResponse(['success' => false, 'error' => 'Invalid action: ' . $action], 400);
         break;
-}
-
-/**
- * Test Handler - For debugging
- */
-function handleTest() {
-    global $requestData;
-    
-    // Create test response
-    $response = [
-        'success' => true,
-        'message' => 'Test endpoint is working',
-        'request_method' => $_SERVER['REQUEST_METHOD'],
-        'action' => isset($_GET['action']) ? $_GET['action'] : 'none',
-        'post_data' => $_POST,
-        'get_data' => $_GET,
-        'files' => isset($_FILES) ? $_FILES : [],
-        'php_version' => PHP_VERSION,
-        'server_software' => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
-    ];
-    
-    sendResponse($response);
 }
 
 /**
@@ -172,17 +173,48 @@ function handleTest() {
 function handleLogin() {
     global $requestData;
     
-    // For testing purposes, accept any login
-    sendResponse([
-        'success' => true,
-        'message' => 'Login successful',
-        'user' => [
-            'id' => 'admin123',
-            'username' => $requestData['username'] ?? 'admin',
-            'name' => 'Administrator',
-            'role' => 'admin'
-        ]
-    ]);
+    // Validate required fields
+    if (empty($requestData['username']) || empty($requestData['password'])) {
+        sendResponse(['success' => false, 'error' => 'Username and password are required'], 400);
+        return;
+    }
+    
+    // Load users
+    $users = loadData(USERS_FILE);
+    
+    // Check if user exists and password is correct
+    $authenticated = false;
+    $user = null;
+    
+    foreach ($users as $u) {
+        if ($u['username'] === $requestData['username'] && password_verify($requestData['password'], $u['password'])) {
+            $authenticated = true;
+            $user = $u;
+            break;
+        }
+    }
+    
+    if ($authenticated) {
+        // Set session variables
+        $_SESSION['logged_in'] = true;
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['role'] = $user['role'];
+        
+        // Send success response
+        sendResponse([
+            'success' => true,
+            'message' => 'Login successful',
+            'user' => [
+                'id' => $user['id'],
+                'username' => $user['username'],
+                'name' => $user['name'],
+                'role' => $user['role']
+            ]
+        ]);
+    } else {
+        sendResponse(['success' => false, 'error' => 'Invalid username or password'], 401);
+    }
 }
 
 function handleLogout() {
@@ -265,58 +297,18 @@ function handleGetRecipe() {
 function handleAddRecipe() {
     global $requestData;
     
-    // Log debug info
-    file_put_contents('add_recipe_log.txt', "Method: " . $_SERVER['REQUEST_METHOD'] . "\n", FILE_APPEND);
-    file_put_contents('add_recipe_log.txt', "POST: " . print_r($_POST, true) . "\n", FILE_APPEND);
-    file_put_contents('add_recipe_log.txt', "GET: " . print_r($_GET, true) . "\n", FILE_APPEND);
-    file_put_contents('add_recipe_log.txt', "FILES: " . print_r($_FILES, true) . "\n", FILE_APPEND);
-    
-    // Process recipe data from either POST or GET
-    $title = '';
-    $intro = '';
-    $status = 'draft';
-    
-    // Try to get data from POST first
-    if (!empty($_POST['title'])) {
-        $title = $_POST['title'];
-        $intro = isset($_POST['intro']) ? $_POST['intro'] : '';
-        $categories = isset($_POST['categories']) ? $_POST['categories'] : [];
-        $tags = isset($_POST['tags']) ? json_decode($_POST['tags'], true) : [];
-        $prepTime = isset($_POST['prep_time']) ? $_POST['prep_time'] : '';
-        $cookTime = isset($_POST['cook_time']) ? $_POST['cook_time'] : '';
-        $servings = isset($_POST['servings']) ? $_POST['servings'] : '';
-        $ingredients = isset($_POST['ingredients']) ? $_POST['ingredients'] : [];
-        $steps = isset($_POST['steps']) ? $_POST['steps'] : [];
-        $notes = isset($_POST['notes']) ? $_POST['notes'] : '';
-        $status = isset($_POST['status']) ? $_POST['status'] : 'draft';
-    } 
-    // Fallback to GET if POST is empty
-    else if (!empty($_GET['title'])) {
-        $title = $_GET['title'];
-        $intro = isset($_GET['intro']) ? $_GET['intro'] : '';
-        $categories = isset($_GET['categories']) ? $_GET['categories'] : [];
-        $tags = isset($_GET['tags']) ? json_decode($_GET['tags'], true) : [];
-        $prepTime = isset($_GET['prep_time']) ? $_GET['prep_time'] : '';
-        $cookTime = isset($_GET['cook_time']) ? $_GET['cook_time'] : '';
-        $servings = isset($_GET['servings']) ? $_GET['servings'] : '';
-        $ingredients = isset($_GET['ingredients']) ? $_GET['ingredients'] : [];
-        $steps = isset($_GET['steps']) ? $_GET['steps'] : [];
-        $notes = isset($_GET['notes']) ? $_GET['notes'] : '';
-        $status = isset($_GET['status']) ? $_GET['status'] : 'draft';
-    }
-    // Last resort - hardcoded values
-    else {
-        $title = "New Recipe " . date('Y-m-d H:i:s');
-        $intro = "This is a test recipe created via the admin panel.";
-        $categories = [];
-        $tags = [];
-        $prepTime = "";
-        $cookTime = "";
-        $servings = "";
-        $ingredients = [];
-        $steps = [];
-        $notes = "";
-    }
+    // Process recipe data from POST
+    $title = isset($_POST['title']) ? $_POST['title'] : '';
+    $intro = isset($_POST['intro']) ? $_POST['intro'] : '';
+    $categories = isset($_POST['categories']) ? $_POST['categories'] : [];
+    $tags = isset($_POST['tags']) ? json_decode($_POST['tags'], true) : [];
+    $prepTime = isset($_POST['prep_time']) ? $_POST['prep_time'] : '';
+    $cookTime = isset($_POST['cook_time']) ? $_POST['cook_time'] : '';
+    $servings = isset($_POST['servings']) ? $_POST['servings'] : '';
+    $ingredients = isset($_POST['ingredients']) ? $_POST['ingredients'] : [];
+    $steps = isset($_POST['steps']) ? $_POST['steps'] : [];
+    $notes = isset($_POST['notes']) ? $_POST['notes'] : '';
+    $status = isset($_POST['status']) ? $_POST['status'] : 'draft';
     
     // Check if title is provided
     if (empty($title)) {
@@ -552,12 +544,6 @@ function handleGetComments() {
         });
     }
     
-    // Create demo data if none exists
-    if (empty($comments)) {
-        $comments = createDemoComments();
-        saveData(COMMENTS_FILE, $comments);
-    }
-    
     // Sort by date
     usort($comments, function($a, $b) {
         $dateA = isset($a['created_at']) ? strtotime($a['created_at']) : 0;
@@ -613,12 +599,6 @@ function handleGetComment() {
     
     // Load comments
     $comments = loadData(COMMENTS_FILE);
-    
-    // Create demo data if none exists
-    if (empty($comments)) {
-        $comments = createDemoComments();
-        saveData(COMMENTS_FILE, $comments);
-    }
     
     // Find comment
     $commentId = $_GET['id'];
@@ -767,29 +747,20 @@ function handleGetAbout() {
     $about = loadData(ABOUT_FILE);
     
     if (!$about) {
-        // Return default data if not found
+        // Return empty data if not found
         $about = [
-            'title' => 'Apie Mane',
-            'subtitle' => 'Kelionė į širdį per maistą, pilną gamtos dovanų, švelnumo ir paprastumo',
+            'title' => '',
+            'subtitle' => '',
             'image' => '',
-            'intro' => 'Sveiki, esu Lidija – keliaujanti miško takeliais, pievomis ir laukais, kur kiekvienas žolės stiebelis, vėjo dvelksmas ar laukinė uoga tampa įkvėpimu naujam skoniui. Maisto gaminimas ir fotografija man – tai savotiška meditacija, leidžianti trumpam sustoti ir pasimėgauti akimirka šiandieniniame chaose.',
-            'sections' => [
-                [
-                    'title' => 'Mano istorija',
-                    'content' => 'Viskas prasidėjo mažoje kaimo virtuvėje, kur mano močiutė Ona ruošdavo kvapnius patiekalus iš paprastų ingredientų. Stebėdavau, kaip jos rankos minkydavo tešlą, kaip ji lengvai ir gracingai sukosi tarp puodų ir keptuvių, kaip pasakodavo apie kiekvieną žolelę, kurią pridėdavo į sriubą ar arbatą.'
-                ],
-                [
-                    'title' => 'Mano filosofija',
-                    'content' => 'Tikiu, kad maistas yra daugiau nei tik kuras mūsų kūnui – tai būdas sujungti žmones, išsaugoti tradicijas ir kurti naujus prisiminimus.'
-                ]
-            ],
-            'email' => 'lidija@saukstas-meiles.lt',
+            'intro' => '',
+            'sections' => [],
+            'email' => '',
             'social' => [
-                'facebook' => 'https://facebook.com/saukstas.meiles',
-                'instagram' => 'https://instagram.com/saukstas.meiles',
-                'pinterest' => 'https://pinterest.com/saukstas.meiles'
+                'facebook' => '',
+                'instagram' => '',
+                'pinterest' => ''
             ],
-            'updated_at' => date('Y-m-d H:i:s')
+            'updated_at' => ''
         ];
     }
     
@@ -1079,39 +1050,6 @@ function handleDashboardStats() {
     $recipes = loadData(RECIPES_FILE);
     $comments = loadData(COMMENTS_FILE);
     
-    // Create demo data if none exists
-    if (empty($recipes)) {
-        $recipes = [
-            [
-                'id' => 'demo1',
-                'title' => 'Šaltibarščiai: vasaros skonis dubenyje',
-                'status' => 'published',
-                'categories' => ['Sriubos', 'Vasaros patiekalai'],
-                'created_at' => '2025-05-03 14:32:15'
-            ],
-            [
-                'id' => 'demo2',
-                'title' => 'Kugelis (bulvių plokštainis)',
-                'status' => 'published',
-                'categories' => ['Bulvės', 'Iš močiutės virtuvės'],
-                'created_at' => '2025-03-15 10:45:22'
-            ]
-        ];
-        saveData(RECIPES_FILE, $recipes);
-    }
-    
-    if (empty($comments)) {
-        $comments = createDemoComments();
-        saveData(COMMENTS_FILE, $comments);
-    }
-    
-    // Count media files
-    $mediaCount = 0;
-    $mediaFiles = glob(UPLOADS_DIR . '/*');
-    if ($mediaFiles) {
-        $mediaCount = count($mediaFiles);
-    }
-    
     // Calculate stats
     $stats = [
         'recipes' => [
@@ -1136,7 +1074,7 @@ function handleDashboardStats() {
             }))
         ],
         'media' => [
-            'total' => $mediaCount
+            'total' => countMediaFiles()
         ]
     ];
     
@@ -1258,37 +1196,28 @@ function handleImageUpload($fileData, $subdir = '') {
     return false;
 }
 
-// Function to create demo comments for testing
-function createDemoComments() {
-    return [
-        [
-            'id' => 'comment1',
-            'author' => 'Laura',
-            'email' => 'laura@example.com',
-            'content' => 'Mano močiutė visada dėdavo truputį krienų į šaltibarščius. Tai suteikia ypatingą aštrumą!',
-            'recipe_id' => 'demo1',
-            'status' => 'approved',
-            'created_at' => '2025-05-03 16:42:10'
-        ],
-        [
-            'id' => 'comment2',
-            'author' => 'Tomas',
-            'email' => 'tomas@example.com',
-            'content' => 'Kefyrą galima pakeisti graikišku jogurtu?',
-            'recipe_id' => 'demo1',
-            'status' => 'approved',
-            'created_at' => '2025-05-04 09:15:33'
-        ],
-        [
-            'id' => 'comment3',
-            'author' => 'Rūta',
-            'email' => 'ruta@example.com',
-            'content' => 'Puikus receptas! Vakar išbandžiau, išėjo nuostabūs šaltibarščiai. Mano šeima buvo sužavėta. Aš dar įdėjau truputi ridikėlių, jie prideda papildomo aštrumo. Ačiū už tokį išsamų receptą!',
-            'recipe_id' => 'demo1',
-            'status' => 'approved',
-            'created_at' => '2025-05-05 14:22:45'
-        ]
-    ];
+// Function to count media files
+function countMediaFiles() {
+    $count = 0;
+    
+    // Count files in the uploads directory
+    $files = glob(UPLOADS_DIR . '/*.{jpg,jpeg,png,gif}', GLOB_BRACE);
+    if ($files) {
+        $count += count($files);
+    }
+    
+    // Count files in subdirectories
+    $subdirs = glob(UPLOADS_DIR . '/*', GLOB_ONLYDIR);
+    if ($subdirs) {
+        foreach ($subdirs as $dir) {
+            $subfiles = glob($dir . '/*.{jpg,jpeg,png,gif}', GLOB_BRACE);
+            if ($subfiles) {
+                $count += count($subfiles);
+            }
+        }
+    }
+    
+    return $count;
 }
 
 // Function to send JSON response

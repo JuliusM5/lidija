@@ -1,16 +1,7 @@
 <?php
 // Router script for PHP's built-in server
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-// Log the request for debugging
-$requestLog = [
-    'time' => date('Y-m-d H:i:s'),
-    'method' => $_SERVER['REQUEST_METHOD'],
-    'uri' => $_SERVER['REQUEST_URI'],
-    'query' => $_SERVER['QUERY_STRING'] ?? ''
-];
-file_put_contents('server_log.txt', json_encode($requestLog) . "\n", FILE_APPEND);
+error_reporting(0);
+ini_set('display_errors', 0);
 
 // Parse the requested URI
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -47,9 +38,21 @@ if ($uri === '/admin-connector.php') {
     return true;
 }
 
-if ($uri === '/test.php') {
-    require_once __DIR__ . '/test.php';
-    return true;
+// API handlers
+if (strpos($uri, '/api/') === 0) {
+    // Route to appropriate API handler
+    $apiPath = substr($uri, 5); // Remove '/api/' prefix
+    $apiFile = __DIR__ . '/api/' . $apiPath;
+    
+    if (file_exists($apiFile)) {
+        require_once $apiFile;
+        return true;
+    } else {
+        header('Content-Type: application/json');
+        http_response_code(404);
+        echo json_encode(['success' => false, 'error' => 'API endpoint not found']);
+        return true;
+    }
 }
 
 // Default to index.html for root and undefined paths

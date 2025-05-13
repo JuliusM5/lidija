@@ -1,205 +1,79 @@
 <div class="recipe-main">
     <div class="recipe-header">
-        <h1 class="recipe-title">Šaltibarščiai: vasaros skonis dubenyje</h1>
+        <h1 class="recipe-title">{{TITLE}}</h1>
         <div class="recipe-meta">
-            <span>Gegužės 3, 2025</span>
+            <span>{{DATE}}</span>
             <span>•</span>
-            <span><a href="#" onclick="showPage('category-page'); loadCategory('Sriubos'); return false;">Sriubos</a></span>
-            <span>•</span>
-            <span>Vasaros patiekalai</span>
+            <span>{{CATEGORIES}}</span>
         </div>
     </div>
     
     <div class="recipe-image">
-        <!-- Replaced external placeholder with local placeholder -->
-        <div class="local-placeholder" style="width:100%;height:500px;border-radius:5px;display:flex;align-items:center;justify-content:center;background-color:#f8f5f1;color:#7f4937;border:1px solid #e6ddd6;">
-            <span style="opacity:0.7;font-size:16px;">Šaltibarščiai</span>
-        </div>
+        <img src="{{IMAGE_URL}}" alt="{{TITLE}}">
     </div>
     
-    <p class="recipe-intro">Ką tik prasidėjus šiltajam sezonui, lietuviškoje virtuvėje atsiranda vienas ryškiausių patiekalų – šaltibarščiai. Ši šalta, ryškiai rožinė sriuba yra tapusi Lietuvos vasaros simboliu ir mano vaikystės atsiminimų dalimi.</p>
+    <p class="recipe-intro">{{INTRO}}</p>
     
     <div class="recipe-content">
-        <p>Kai buvau maža, mama visada žinodavo, kad atėjo laikas gaminti šaltibarščius, kai termometras pakildavo virš 20 laipsnių. Virtuvėje pasklisdavo žemiškas virtų burokėlių kvapas, o aš su didžiausiu susidomėjimu stebėdavau, kaip raudonieji burokėliai, susijungę su baltu kefyru, sukurdavo tą nepakartojamą, ryškiai rožinę spalvą.</p>
-        
-        <p>Prisimenu, kaip senelė niekada nematuodavo ingredientų – viską darydavo "iš akies", ir kiekvieną kartą šaltibarščiai būdavo tobuli. Ji visada sakydavo: "Svarbu, kad būtų šviežios daržovės ir geras kefyras – visa kita tik detalės."</p>
+        {{CONTENT}}
         
         <div class="recipe-box">
-            <h3>Šaltibarščiai</h3>
+            <h3>{{TITLE}}</h3>
             
             <div class="recipe-time">
                 <div class="recipe-time-item">
                     <span class="time-label">Paruošimas</span>
-                    <span class="time-value">20 min</span>
+                    <span class="time-value">{{PREP_TIME}} min</span>
                 </div>
                 <div class="recipe-time-item">
-                    <span class="time-label">Atvėsinimas</span>
-                    <span class="time-value">2 val</span>
+                    <span class="time-label">Gaminimas</span>
+                    <span class="time-value">{{COOK_TIME}} min</span>
                 </div>
                 <div class="recipe-time-item">
                     <span class="time-label">Porcijos</span>
-                    <span class="time-value">4</span>
+                    <span class="time-value">{{SERVINGS}}</span>
                 </div>
             </div>
             
             <h4>Ingredientai</h4>
             <ul>
-                <li>500 ml kefyro</li>
-                <li>2-3 vidutinio dydžio virti burokėliai (apie 300g)</li>
-                <li>1 didelis agurkas</li>
-                <li>3-4 laiškiniai svogūnai</li>
-                <li>Didelis kuokštas šviežių krapų (apie 30g)</li>
-                <li>2 kietai virti kiaušiniai</li>
-                <li>Druskos ir pipirų pagal skonį</li>
-                <li>Žiupsnelis citrinų sulčių (nebūtina)</li>
-                <li>500g mažų bulvių patiekimui</li>
+                {{INGREDIENTS}}
             </ul>
             
             <h4>Gaminimo būdas</h4>
             <ol>
-                <li>Kietai išvirkite kiaušinius (apie 9 minutes). Atvėsinkite po šaltu vandeniu, nulupkite ir atidėkite.</li>
-                <li>Jei naudojate šviežius burokėlius, nulupkite ir virkite juos iki minkštumo (apie 40-50 minučių), tada visiškai atvėsinkite.</li>
-                <li>Smulkiai sutarkuokite atvėsusius burokėlius į didelį dubenį.</li>
-                <li>Smulkiai supjaustykite agurką. Sukapokite laiškinius svogūnus ir šviežius krapus.</li>
-                <li>Į tarkuotus burokėlius sudėkite agurką, laiškinius svogūnus ir didžiąją dalį krapų (šiek tiek pasilikite papuošimui).</li>
-                <li>Supilkite kefyrą į dubenį ir gerai išmaišykite. Jei mišinys per tirštas, įpilkite šiek tiek šalto vandens.</li>
-                <li>Pagardinkite druska ir pipirais pagal skonį. Jei norite šiek tiek rūgštumo, įlašinkite citrinų sulčių.</li>
-                <li>Atvėsinkite sriubą šaldytuve bent 2 valandas, kad skoniai susijungtų, o sriuba taptų tinkamai šalta.</li>
-                <li>Kol sriuba vėsta, išvirkite bulves su žiupsneliu druskos, kol jos taps minkštos (apie 15-20 minučių, priklausomai nuo dydžio). Nusausinkite ir laikykite šiltai.</li>
-                <li>Prieš patiekiant, supjaustykite kietai virtus kiaušinius.</li>
-                <li>Sriubą pilkite į dubenėlius, į kiekvieną įdėkite šiek tiek supjaustytų kiaušinių ir pabarstykite likusiais krapais.</li>
-                <li>Patiekite su karštomis virtomis bulvėmis.</li>
+                {{STEPS}}
             </ol>
-        </div>
-        
-        <p>Šaltibarščiai Lietuvoje yra tapę tikru vasaros simboliu. Šios sriubos populiarumas kasmet auga – Vilniuje netgi vyksta "Pink Soup" festivalis! Užsieniečiai, negalėdami ištarti sudėtingo šaltibarščių pavadinimo, dažnai vadina juos tiesiog "rožine sriuba" dėl jų ryškios spalvos.</p>
-        
-        <p>Ši sriuba įkūnija lietuvišką vasarą: šviežias daržoves, žalumynus iš sodo ir gaivą, kurios taip reikia trumpu, bet brangiu šiltuoju metų laiku. Tai – sezoninio valgymo tradicijos pavyzdys.</p>
-        
-        <div class="recipe-image">
-            <!-- Replaced external placeholder with local placeholder -->
-            <div class="local-placeholder" style="width:100%;height:500px;border-radius:5px;display:flex;align-items:center;justify-content:center;background-color:#f8f5f1;color:#7f4937;border:1px solid #e6ddd6;">
-                <span style="opacity:0.7;font-size:16px;">Šaltibarščiai su bulvėmis</span>
-            </div>
-        </div>
-        
-        <p>Lietuvoje šaltibarščiai visada patiekiami labai šalti – tiesiai iš šaldytuvo. Tradiciškai jie valgomi su karštomis virtomis bulvėmis, kurios patiekiamos atskirai arba kartais įdedamos tiesiai į sriubą. Šis karšto ir šalto kontrastas yra dalis to, kas daro patiekalą tokį ypatingą.</p>
-        
-        <p>Vaikystėje prisimenu, kaip mirkydavau karštas bulves šaltoje sriuboje, stebėdama, kaip rožinė spalva sukasi aplink jas. Būtent šie maži ritualai paverčia maistą kažkuo daugiau nei vien maitinimusi – tai ryšys su mūsų kultūra ir prisiminimais.</p>
-        
-        <p>Tikiuosi, kad išbandysite šį rožinį vasaros džiaugsmą savo namuose. Net jei nesate lietuvis, ši sriuba turi savybę patraukti žmones savo ryškia spalva ir gaivinančiu skoniu. Kas žino – galbūt ji taps ir jūsų vasaros tradicija!</p>
-        
-        <div class="recipe-footer">
-            <div class="recipe-tags">
-                <a href="#" onclick="showPage('category-page'); loadCategory('Vasara'); return false;">&#8203;#vasara</a>
-                <a href="#" onclick="showPage('category-page'); loadCategory('Sriubos'); return false;">&#8203;#sriubos</a>
-                <a href="#" onclick="showPage('category-page'); loadCategory('Daržovės'); return false;">&#8203;#burokėliai</a>
-                <a href="#" onclick="showPage('category-page'); loadCategory('Iš močiutės virtuvės'); return false;">&#8203;#tradiciniaireceptai</a>
-            </div>
-            <div class="recipe-share">
-                <span>Dalintis:</span>
-                <a href="#"><i class="fa fa-facebook"></i></a>
-                <a href="#"><i class="fa fa-pinterest"></i></a>
-                <a href="#"><i class="fa fa-instagram"></i></a>
-            </div>
+            
+            {{NOTES}}
         </div>
     </div>
     
-    <!-- Comments Section -->
+    <div class="recipe-footer">
+        <div class="recipe-tags">
+            {{TAGS}}
+        </div>
+        <div class="recipe-share">
+            <span>Dalintis:</span>
+            <a href="https://facebook.com/share?url={{ENCODED_URL}}" target="_blank"><i class="fa fa-facebook"></i></a>
+            <a href="https://pinterest.com/pin/create/button/?url={{ENCODED_URL}}&media={{ENCODED_IMAGE}}&description={{ENCODED_TITLE}}" target="_blank"><i class="fa fa-pinterest"></i></a>
+            <a href="mailto:?subject={{ENCODED_TITLE}}&body={{ENCODED_URL}}" target="_blank"><i class="fa fa-envelope"></i></a>
+        </div>
+    </div>
+</div>
+
+<!-- Comments Section -->
 <div class="comments-section">
-    <h3 class="comments-title">Komentarai (4)</h3>
+    <h3 class="comments-title">Komentarai ({{COMMENTS_COUNT}})</h3>
     
-    <div class="comment">
-        <div class="comment-header">
-            <!-- Replaced missing image with text-based avatar -->
-            <div class="comment-avatar local-placeholder" style="width:55px;height:55px;border-radius:50%;display:flex;align-items:center;justify-content:center;background-color:#f8f5f1;color:#7f4937;border:2px solid white;box-shadow:0 0 0 1px #eee8e0;">
-                <span style="opacity:0.7;font-size:16px;">R</span>
-            </div>
-            <div class="comment-info">
-                <div class="comment-author">Rūta</div>
-                <div class="comment-date">Gegužės 5, 2025</div>
-            </div>
-        </div>
-        <div class="comment-content">
-            <p>Puikus receptas! Vakar išbandžiau, išėjo nuostabūs šaltibarščiai. Mano šeima buvo sužavėta. Aš dar įdėjau truputi ridikėlių, jie prideda papildomo aštrumo. Ačiū už tokį išsamų receptą!</p>
-        </div>
-        <a href="#" class="comment-reply-link">Atsakyti</a>
-        
-        <div class="comment-reply">
-            <div class="comment">
-                <div class="comment-header">
-                    <!-- Replaced missing image with text-based avatar -->
-                    <div class="comment-avatar local-placeholder" style="width:55px;height:55px;border-radius:50%;display:flex;align-items:center;justify-content:center;background-color:#f8f5f1;color:#7f4937;border:2px solid white;box-shadow:0 0 0 1px #eee8e0;">
-                        <span style="opacity:0.7;font-size:16px;">L</span>
-                    </div>
-                    <div class="comment-info">
-                        <div class="comment-author">Lidija</div>
-                        <div class="comment-date">Gegužės 5, 2025</div>
-                    </div>
-                </div>
-                <div class="comment-content">
-                    <p>Rūta, labai džiaugiuosi, kad patiko! Ridikėliai tikrai puikus papildymas, juos dažnai naudoja ir mano mama. Ačiū, kad pasidalinai savo patirtimi!</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="comment">
-        <div class="comment-header">
-            <!-- Replaced missing image with text-based avatar -->
-            <div class="comment-avatar local-placeholder" style="width:55px;height:55px;border-radius:50%;display:flex;align-items:center;justify-content:center;background-color:#f8f5f1;color:#7f4937;border:2px solid white;box-shadow:0 0 0 1px #eee8e0;">
-                <span style="opacity:0.7;font-size:16px;">T</span>
-            </div>
-            <div class="comment-info">
-                <div class="comment-author">Tomas</div>
-                <div class="comment-date">Gegužės 4, 2025</div>
-            </div>
-        </div>
-        <div class="comment-content">
-            <p>Kefyrą galima pakeisti graikišku jogurtu? Neturiu kefyro namuose, o labai norisi išbandyti šį receptą šiandien.</p>
-        </div>
-        <a href="#" class="comment-reply-link">Atsakyti</a>
-        
-        <div class="comment-reply">
-            <div class="comment">
-                <div class="comment-header">
-                    <!-- Replaced missing image with text-based avatar -->
-                    <div class="comment-avatar local-placeholder" style="width:55px;height:55px;border-radius:50%;display:flex;align-items:center;justify-content:center;background-color:#f8f5f1;color:#7f4937;border:2px solid white;box-shadow:0 0 0 1px #eee8e0;">
-                        <span style="opacity:0.7;font-size:16px;">L</span>
-                    </div>
-                    <div class="comment-info">
-                        <div class="comment-author">Lidija</div>
-                        <div class="comment-date">Gegužės 4, 2025</div>
-                    </div>
-                </div>
-                <div class="comment-content">
-                    <p>Tomai, taip, graikiško jogurto tikrai gali naudoti vietoj kefyro, tik šiek tiek praskiesk vandeniu, kad konsistencija būtų skystesnė. Skonis bus šiek tiek kitoks, bet vis tiek skanu. Skanaus!</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="comment">
-        <div class="comment-header">
-            <!-- Replaced missing image with text-based avatar -->
-            <div class="comment-avatar local-placeholder" style="width:55px;height:55px;border-radius:50%;display:flex;align-items:center;justify-content:center;background-color:#f8f5f1;color:#7f4937;border:2px solid white;box-shadow:0 0 0 1px #eee8e0;">
-                <span style="opacity:0.7;font-size:16px;">L</span>
-            </div>
-            <div class="comment-info">
-                <div class="comment-author">Laura</div>
-                <div class="comment-date">Gegužės 3, 2025</div>
-            </div>
-        </div>
-        <div class="comment-content">
-            <p>Mano močiutė visada dėdavo truputį krienų į šaltibarščius. Tai suteikia ypatingą aštrumą ir puikiai dera su kitais ingredientais. Pabandykite, jei mėgstate aštresnius skonius!</p>
-        </div>
-        <a href="#" class="comment-reply-link">Atsakyti</a>
+    <div id="comments-container">
+        {{COMMENTS}}
     </div>
     
     <!-- Comment Form -->
     <div class="comment-form">
         <h3 class="comment-form-title">Palikite komentarą</h3>
-        <form>
+        <form id="recipe-comment-form" data-recipe-id="{{RECIPE_ID}}">
             <div class="form-group">
                 <label for="name">Vardas</label>
                 <input type="text" id="name" name="name" class="form-control" required autocomplete="name">
