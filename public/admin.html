@@ -102,7 +102,7 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td colspan="4" style="text-align: center;">Nėra receptų</td>
+                                <td colspan="4" style="text-align: center;">Įkeliama...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -125,7 +125,7 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td colspan="5" style="text-align: center;">Nėra komentarų</td>
+                                <td colspan="5" style="text-align: center;">Įkeliama...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -156,7 +156,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Recipes will be loaded here -->
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Įkeliama...</td>
+                        </tr>
                     </tbody>
                 </table>
                 
@@ -342,7 +344,7 @@
             
             <!-- Edit Recipe Page -->
             <div id="page-edit-recipe" class="admin-page" style="display: none;">
-                <!-- Similar to Add Recipe but with populated form -->
+                <!-- Will be populated dynamically by cloning the add recipe form -->
             </div>
             
             <!-- Comments Page -->
@@ -370,7 +372,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Comments will be loaded here -->
+                        <tr>
+                            <td colspan="6" style="text-align: center;">Įkeliama...</td>
+                        </tr>
                     </tbody>
                 </table>
                 
@@ -403,7 +407,7 @@
                 </div>
                 
                 <div class="gallery-grid">
-                    <!-- Media will be loaded here -->
+                    <div class="loading-message">Įkeliama...</div>
                 </div>
                 
                 <div class="pagination">
@@ -584,7 +588,7 @@ Tradicijų puoselėjimas. Lietuviška virtuvė turi gilias tradicijas, kurias st
     </div>
 
     <!-- Notification -->
-    <div class="notification notification-success" id="notification">
+    <div class="notification" id="notification">
         <div class="notification-icon">
             <i class="fas fa-check-circle"></i>
         </div>
@@ -596,110 +600,6 @@ Tradicijų puoselėjimas. Lietuviška virtuvė turi gilias tradicijas, kurias st
     </div>
 
     <!-- Scripts -->
-    <script src="js/admin-fix.js"></script>
-    <script src="js/admin/api-connector.js"></script>
     <script src="js/admin/admin.js"></script>
-    <script src="js/admin-fetch-fix.js"></script>
-
-    <script>
-    // Temporary login handling to demonstrate the admin panel
-    document.addEventListener('DOMContentLoaded', function() {
-        const loginForm = document.getElementById('login-form');
-        if (loginForm) {
-            loginForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
-                
-                // Simple mock login (in a real system, this would be handled by the backend)
-                if (username && password) {
-                    // Hide login page, show dashboard
-                    document.getElementById('login-page').style.display = 'none';
-                    document.getElementById('admin-dashboard').style.display = 'block';
-                    
-                    // Show dashboard page
-                    showAdminPage('dashboard');
-                    
-                    // Show success notification
-                    showNotification('Sėkmė', 'Prisijungta sėkmingai!', 'success');
-                } else {
-                    showNotification('Klaida', 'Prašome įvesti vartotojo vardą ir slaptažodį', 'error');
-                }
-            });
-        }
-        
-        // Make sure notification and modal functions are available
-        window.showNotification = function(title, message, type = 'success') {
-            const notification = document.getElementById('notification');
-            if (!notification) return;
-            
-            const notificationTitle = notification.querySelector('.notification-title');
-            const notificationMessage = notification.querySelector('.notification-message');
-            const notificationIcon = notification.querySelector('.notification-icon i');
-            
-            if (notificationTitle && notificationMessage && notificationIcon) {
-                // Set notification content
-                notificationTitle.textContent = title;
-                notificationMessage.textContent = message;
-                
-                // Set notification type
-                notification.className = 'notification';
-                if (type === 'success') {
-                    notification.classList.add('notification-success');
-                    notificationIcon.className = 'fas fa-check-circle';
-                } else if (type === 'error') {
-                    notification.classList.add('notification-error');
-                    notificationIcon.className = 'fas fa-exclamation-circle';
-                }
-                
-                // Show notification
-                notification.classList.add('show');
-                
-                // Auto-hide notification after 5 seconds
-                setTimeout(() => {
-                    hideNotification();
-                }, 5000);
-            }
-        }
-        
-        window.hideNotification = function() {
-            const notification = document.getElementById('notification');
-            if (notification) {
-                notification.classList.remove('show');
-            }
-        }
-        
-        window.closeModal = function(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.remove('show');
-            }
-        }
-        
-        // Function to switch between admin pages
-        window.showAdminPage = function(pageId) {
-            // Hide all pages
-            const pages = document.querySelectorAll('.admin-page');
-            pages.forEach(page => {
-                page.style.display = 'none';
-            });
-            
-            // Show selected page
-            const selectedPage = document.getElementById(`page-${pageId}`);
-            if (selectedPage) {
-                selectedPage.style.display = 'block';
-            }
-        }
-        
-        // Simple logout function
-        window.logout = function() {
-            document.getElementById('login-page').style.display = 'block';
-            document.getElementById('admin-dashboard').style.display = 'none';
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
-        }
-    });
-    </script>
 </body>
 </html>
