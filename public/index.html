@@ -230,16 +230,18 @@
         </footer>
     </div>
 
-    <!-- JavaScript -->
-    <script src="js/index-recipe-display-fix.js"></script>
-    <script src="js/navigation.js"></script>
-    <script src="js/forms.js"></script>
-    <script src="js/main.js"></script>
+        <!-- Core Functionality -->
+    <script src="/public/js/main.js"></script>
+    <script src="/public/js/navigation.js"></script>
+    <script src="/public/js/recipe-core.js"></script>
+    <script src="/public/js/forms.js"></script>
 
-    <!-- Diagnostic and fix scripts - IN THIS ORDER -->
-    <script src="js/recipe-diagnostic-tool.js"></script>
-    <script src="js/recipe-core.js"></script>
-    <script src="js/recipe-editor.js"></script>
+    <!-- Admin Functionality (for admin pages only) -->
+    <script src="/public/js/admin-core.js"></script>
+    <script src="/public/js/recipe-editor.js"></script>
+
+    <!-- Development Tools (remove in production) -->
+    <script src="/public/js/diagnostic-tools.js"></script>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {

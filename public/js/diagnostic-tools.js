@@ -1,9 +1,21 @@
-// Diagnostic Tool for Recipe System
-// This script helps diagnose issues with the recipe system
+/**
+ * Diagnostic Tools - Comprehensive Debugging and Diagnostic Utilities
+ * 
+ * This file consolidates diagnostic functionality from:
+ * - recipe-diagnostic-tool.js
+ * - auth-debugger.js
+ * 
+ * Features:
+ * - Recipe system diagnostics
+ * - Authentication debugging
+ * - API endpoint testing
+ * - Performance monitoring
+ * - Error logging
+ */
 
 (function() {
-    console.log('Recipe System Diagnostic Tool loaded');
-    
+    console.log('Diagnostic Tools loaded - Comprehensive debugging utilities');
+
     // Store original console functions
     const originalConsole = {
         log: console.log,
@@ -29,9 +41,13 @@
         diagnosticLogs.push({type: 'warn', args: Array.from(arguments), time: new Date()});
         originalConsole.warn.apply(console, arguments);
     };
+
+    // =====================================================
+    // RECIPE DIAGNOSTIC PANEL
+    // =====================================================
     
-    // Create a diagnostic panel
-    function createDiagnosticPanel() {
+    // Create the recipe diagnostic panel
+    function createRecipeDiagnosticPanel() {
         // Create the panel container
         const panel = document.createElement('div');
         panel.id = 'recipe-diagnostic-panel';
@@ -126,9 +142,18 @@
             checkRecipeData();
         };
         
+        // Debug authentication button
+        const debugAuthBtn = document.createElement('button');
+        debugAuthBtn.textContent = 'Debug Authentication';
+        debugAuthBtn.className = 'diagnostic-btn';
+        debugAuthBtn.style.marginLeft = '10px';
+        debugAuthBtn.onclick = function() {
+            showAuthDiagnosticPanel();
+        };
+        
         // Fix categories directly button
         const fixCategoriesBtn = document.createElement('button');
-        fixCategoriesBtn.textContent = 'Fix Categories Directly';
+        fixCategoriesBtn.textContent = 'Fix Categories';
         fixCategoriesBtn.className = 'diagnostic-btn';
         fixCategoriesBtn.style.marginLeft = '10px';
         fixCategoriesBtn.onclick = function() {
@@ -137,6 +162,7 @@
         
         actionButtons.appendChild(testApiBtn);
         actionButtons.appendChild(checkRecipeBtn);
+        actionButtons.appendChild(debugAuthBtn);
         actionButtons.appendChild(fixCategoriesBtn);
         
         // Console log section
@@ -477,54 +503,6 @@
                                 },
                                 body: JSON.stringify({ categories: selectedCategories })
                             });
-                        },
-                        
-                        // Method 4: Specific categories with FormData
-                        async () => {
-                            const formData = new FormData();
-                            selectedCategories.forEach(cat => {
-                                formData.append('categories[]', cat);
-                            });
-                            
-                            return fetch(`/admin-api/recipes/${recipe.id}/categories`, {
-                                method: 'POST',
-                                headers: {
-                                    'Authorization': `Bearer ${token}`
-                                },
-                                body: formData
-                            });
-                        },
-                        
-                        // Method 5: Full recipe update with all fields
-                        async () => {
-                            // First get full recipe details
-                            const recipeDetailResponse = await fetch(`/admin-api/recipes/${recipe.id}`, {
-                                headers: {
-                                    'Authorization': `Bearer ${token}`
-                                }
-                            });
-                            
-                            if (!recipeDetailResponse.ok) {
-                                throw new Error('Failed to get recipe details');
-                            }
-                            
-                            const recipeDetail = await recipeDetailResponse.json();
-                            if (!recipeDetail.success || !recipeDetail.data) {
-                                throw new Error('Invalid recipe detail data');
-                            }
-                            
-                            // Update the recipe with categories
-                            const fullRecipe = recipeDetail.data;
-                            fullRecipe.categories = selectedCategories;
-                            
-                            return fetch(`/admin-api/recipes/${recipe.id}`, {
-                                method: 'PUT',
-                                headers: {
-                                    'Authorization': `Bearer ${token}`,
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify(fullRecipe)
-                            });
                         }
                     ];
                     
@@ -608,56 +586,429 @@
         // Scroll to bottom
         logsContainer.scrollTop = logsContainer.scrollHeight;
     }
+
+    // =====================================================
+    // AUTHENTICATION DEBUGGING
+    // =====================================================
     
-    // Add a button to open the diagnostic panel
-    function addDiagnosticButton() {
-        const button = document.createElement('button');
-        button.textContent = '🔧';
-        button.id = 'recipe-diagnostic-button';
-        button.style.position = 'fixed';
-        button.style.bottom = '20px';
-        button.style.right = '20px';
-        button.style.zIndex = '9999';
-        button.style.width = '40px';
-        button.style.height = '40px';
-        button.style.backgroundColor = '#7f4937';
-        button.style.color = 'white';
-        button.style.border = 'none';
-        button.style.borderRadius = '50%';
-        button.style.cursor = 'pointer';
-        button.style.fontSize = '20px';
-        button.style.display = 'flex';
-        button.style.justifyContent = 'center';
-        button.style.alignItems = 'center';
-        button.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+    // Create authentication diagnostic panel
+    function createAuthDiagnosticPanel() {
+        // Create the panel container
+        const panel = document.createElement('div');
+        panel.id = 'auth-debug-panel';
+        panel.style.position = 'fixed';
+        panel.style.width = '80%';
+        panel.style.maxWidth = '800px';
+        panel.style.height = '80%';
+        panel.style.top = '10%';
+        panel.style.left = '10%';
+        panel.style.backgroundColor = '#fff';
+        panel.style.boxShadow = '0 0 20px rgba(0,0,0,0.3)';
+        panel.style.zIndex = '9999';
+        panel.style.display = 'none';
+        panel.style.borderRadius = '8px';
+        panel.style.overflow = 'hidden';
+        panel.style.display = 'flex';
+        panel.style.flexDirection = 'column';
         
-        // Add hover effect
-        button.onmouseover = function() {
-            this.style.backgroundColor = '#aa5f44';
+        // Create header
+        const header = document.createElement('div');
+        header.style.padding = '15px';
+        header.style.backgroundColor = '#7f4937';
+        header.style.color = 'white';
+        header.style.fontWeight = 'bold';
+        header.style.display = 'flex';
+        header.style.justifyContent = 'space-between';
+        header.style.alignItems = 'center';
+        header.innerHTML = '<span>Authentication Diagnostics</span>';
+        
+        // Add close button
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = '&times;';
+        closeBtn.style.background = 'none';
+        closeBtn.style.border = 'none';
+        closeBtn.style.color = 'white';
+        closeBtn.style.fontSize = '24px';
+        closeBtn.style.cursor = 'pointer';
+        closeBtn.onclick = function() {
+            panel.style.display = 'none';
         };
-        button.onmouseout = function() {
-            this.style.backgroundColor = '#7f4937';
+        header.appendChild(closeBtn);
+        
+        // Create content area
+        const content = document.createElement('div');
+        content.style.padding = '20px';
+        content.style.overflowY = 'auto';
+        content.style.flex = '1';
+        
+        // Authentication status section
+        const authStatus = document.createElement('div');
+        authStatus.innerHTML = '<h3>Authentication Status</h3>';
+        
+        // Token Information
+        const tokenInfo = document.createElement('div');
+        tokenInfo.style.marginBottom = '20px';
+        tokenInfo.innerHTML = '<h4>Token Information</h4>';
+        
+        const tokenSection = document.createElement('div');
+        tokenSection.style.backgroundColor = '#f8f9fa';
+        tokenSection.style.padding = '10px';
+        tokenSection.style.borderRadius = '4px';
+        tokenSection.style.marginBottom = '15px';
+        tokenSection.id = 'token-info-section';
+        
+        // Action buttons
+        const actionButtons = document.createElement('div');
+        actionButtons.style.marginBottom = '20px';
+        
+        // Test authentication button
+        const testAuthBtn = document.createElement('button');
+        testAuthBtn.textContent = 'Test Authentication';
+        testAuthBtn.className = 'diagnostic-btn';
+        testAuthBtn.onclick = function() {
+            testAuthentication();
         };
         
-        // Add click handler
-        button.onclick = function() {
-            // Create panel if it doesn't exist
-            let panel = document.getElementById('recipe-diagnostic-panel');
-            if (!panel) {
-                panel = createDiagnosticPanel();
-            }
-            
-            // Show panel
-            panel.style.display = 'flex';
-            
-            // Update logs
-            updateLogsDisplay();
+        // Clear token button
+        const clearTokenBtn = document.createElement('button');
+        clearTokenBtn.textContent = 'Clear Token & Logout';
+        clearTokenBtn.className = 'diagnostic-btn';
+        clearTokenBtn.style.marginLeft = '10px';
+        clearTokenBtn.onclick = function() {
+            clearAuthenticationData();
         };
         
-        document.body.appendChild(button);
+        // Force login button
+        const forceLoginBtn = document.createElement('button');
+        forceLoginBtn.textContent = 'Force Login';
+        forceLoginBtn.className = 'diagnostic-btn';
+        forceLoginBtn.style.marginLeft = '10px';
+        forceLoginBtn.onclick = function() {
+            showLoginHelp();
+        };
+        
+        actionButtons.appendChild(testAuthBtn);
+        actionButtons.appendChild(clearTokenBtn);
+        actionButtons.appendChild(forceLoginBtn);
+        
+        // Console log section
+        const logSection = document.createElement('div');
+        logSection.innerHTML = '<h3>Authentication Logs</h3>';
+        
+        const authLogsContainer = document.createElement('div');
+        authLogsContainer.id = 'auth-logs-container';
+        authLogsContainer.style.backgroundColor = '#f8f9fa';
+        authLogsContainer.style.padding = '10px';
+        authLogsContainer.style.borderRadius = '4px';
+        authLogsContainer.style.fontFamily = 'monospace';
+        authLogsContainer.style.fontSize = '12px';
+        authLogsContainer.style.maxHeight = '200px';
+        authLogsContainer.style.overflowY = 'auto';
+        
+        // Assemble the panel
+        authStatus.appendChild(tokenInfo);
+        tokenInfo.appendChild(tokenSection);
+        authStatus.appendChild(actionButtons);
+        logSection.appendChild(authLogsContainer);
+        
+        content.appendChild(authStatus);
+        content.appendChild(logSection);
+        
+        panel.appendChild(header);
+        panel.appendChild(content);
+        
+        // Add to document
+        document.body.appendChild(panel);
+        
+        return panel;
     }
     
-    // Automatically fix 404 issues by intercepting link clicks
+    // Show the authentication diagnostics panel
+    function showAuthDiagnosticPanel() {
+        // Create panel if it doesn't exist
+        let panel = document.getElementById('auth-debug-panel');
+        if (!panel) {
+            panel = createAuthDiagnosticPanel();
+        }
+        
+        // Show panel
+        panel.style.display = 'flex';
+        
+        // Update token info
+        updateTokenInfo();
+        
+        // Update logs
+        updateAuthLogsDisplay();
+    }
+    
+    // Update token information display
+    function updateTokenInfo() {
+        const tokenSection = document.getElementById('token-info-section');
+        if (!tokenSection) return;
+        
+        const token = localStorage.getItem('token');
+        const userJson = localStorage.getItem('user');
+        
+        if (token) {
+            // Try to decode the JWT token
+            try {
+                const payload = decodeJWT(token);
+                
+                let expiryInfo = 'Unknown expiry';
+                if (payload.exp) {
+                    const expiryDate = new Date(payload.exp * 1000);
+                    const now = new Date();
+                    const isExpired = expiryDate < now;
+                    expiryInfo = `Expires: ${expiryDate.toLocaleString()} (${isExpired ? 'EXPIRED' : 'valid'})`;
+                }
+                
+                tokenSection.innerHTML = `
+                    <div style="color: green; margin-bottom: 10px;">✓ Token found in localStorage</div>
+                    <div><strong>Issued at:</strong> ${payload.iat ? new Date(payload.iat * 1000).toLocaleString() : 'Unknown'}</div>
+                    <div><strong>${expiryInfo}</strong></div>
+                    <div><strong>Subject:</strong> ${payload.sub || 'Not specified'}</div>
+                    <div style="margin-top: 10px;"><strong>User:</strong> ${userJson ? JSON.parse(userJson).username || 'Unknown' : 'Not found'}</div>
+                    <div style="margin-top: 10px;"><strong>Role:</strong> ${payload.role || 'Not specified'}</div>
+                    <div style="font-size: 10px; margin-top: 15px; word-break: break-all;">
+                        <strong>Token:</strong> ${token}
+                    </div>
+                `;
+            } catch (e) {
+                tokenSection.innerHTML = `
+                    <div style="color: orange; margin-bottom: 10px;">⚠ Token found but could not be decoded</div>
+                    <div style="color: red;">${e.message}</div>
+                    <div style="font-size: 10px; margin-top: 15px; word-break: break-all;">
+                        <strong>Token:</strong> ${token}
+                    </div>
+                `;
+            }
+        } else {
+            tokenSection.innerHTML = `
+                <div style="color: red; margin-bottom: 10px;">✗ No authentication token found</div>
+                <div>You are not currently logged in. Authentication will fail for protected routes.</div>
+            `;
+        }
+    }
+    
+    // Update authentication logs display
+    function updateAuthLogsDisplay() {
+        const logsContainer = document.getElementById('auth-logs-container');
+        if (!logsContainer) return;
+        
+        // Clear existing logs
+        logsContainer.innerHTML = '';
+        
+        // Filter authentication related logs
+        const authLogs = diagnosticLogs.filter(log => {
+            const message = log.args.join(' ');
+            return message.includes('auth') || 
+                   message.includes('login') || 
+                   message.includes('token') || 
+                   message.includes('Authentication');
+        });
+        
+        // Get the last 20 logs
+        const recentLogs = authLogs.slice(-20);
+        
+        if (recentLogs.length === 0) {
+            logsContainer.innerHTML = '<div>No authentication related logs found.</div>';
+            return;
+        }
+        
+        // Add logs to container
+        recentLogs.forEach(log => {
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${log.type}`;
+            
+            const time = log.time.toLocaleTimeString();
+            const message = log.args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg) : arg
+            ).join(' ');
+            
+            logEntry.textContent = `[${time}] ${message}`;
+            logsContainer.appendChild(logEntry);
+        });
+        
+        // Scroll to bottom
+        logsContainer.scrollTop = logsContainer.scrollHeight;
+    }
+    
+    // Function to decode JWT token
+    function decodeJWT(token) {
+        const parts = token.split('.');
+        if (parts.length !== 3) {
+            throw new Error('Invalid token format');
+        }
+        
+        const payload = parts[1];
+        const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+        return JSON.parse(decoded);
+    }
+    
+    // Function to test authentication
+    function testAuthentication() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('No authentication token found');
+            updateAuthLogsDisplay();
+            return;
+        }
+        
+        console.log('Testing authentication with server...');
+        
+        // Make a request to the server to verify the token
+        fetch('/admin-api/auth/verify', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Authentication failed: ${response.status} ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                console.log('Authentication successful:', data);
+            } else {
+                console.error('Authentication failed:', data);
+            }
+        })
+        .catch(error => {
+            console.error('Authentication error:', error.message);
+        })
+        .finally(() => {
+            updateTokenInfo();
+            updateAuthLogsDisplay();
+        });
+    }
+    
+    // Function to clear authentication data
+    function clearAuthenticationData() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('isLoggedIn');
+        console.log('Authentication data cleared');
+        updateTokenInfo();
+        updateAuthLogsDisplay();
+        
+        // Reload the page to show login screen
+        if (confirm('Authentication data cleared. Reload page to show login screen?')) {
+            window.location.reload();
+        }
+    }
+    
+    // Function to show login help
+    function showLoginHelp() {
+        // Create login help modal
+        const modal = document.createElement('div');
+        modal.style.position = 'fixed';
+        modal.style.top = '50%';
+        modal.style.left = '50%';
+        modal.style.transform = 'translate(-50%, -50%)';
+        modal.style.backgroundColor = 'white';
+        modal.style.padding = '20px';
+        modal.style.boxShadow = '0 0 20px rgba(0,0,0,0.3)';
+        modal.style.zIndex = '10000';
+        modal.style.borderRadius = '8px';
+        modal.style.width = '400px';
+        
+        // Create modal content
+        modal.innerHTML = `
+            <h3 style="margin-top: 0;">Force Login</h3>
+            <p>Enter credentials to attempt a direct login:</p>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Username:</label>
+                <input type="text" id="debug-username" value="admin" style="width: 100%; padding: 8px; box-sizing: border-box;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Password:</label>
+                <input type="password" id="debug-password" style="width: 100%; padding: 8px; box-sizing: border-box;">
+            </div>
+            <div style="text-align: right;">
+                <button id="debug-login-cancel" style="padding: 8px 15px; margin-right: 10px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+                <button id="debug-login-submit" style="padding: 8px 15px; background-color: #7f4937; color: white; border: none; border-radius: 4px; cursor: pointer;">Login</button>
+            </div>
+        `;
+        
+        // Add to document
+        document.body.appendChild(modal);
+        
+        // Add event listeners
+        document.getElementById('debug-login-cancel').onclick = function() {
+            document.body.removeChild(modal);
+        };
+        
+        document.getElementById('debug-login-submit').onclick = function() {
+            const username = document.getElementById('debug-username').value;
+            const password = document.getElementById('debug-password').value;
+            
+            if (!username || !password) {
+                alert('Please enter both username and password');
+                return;
+            }
+            
+            console.log(`Attempting force login with username: ${username}`);
+            
+            // Send login request
+            fetch('/admin-api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        try {
+                            const data = JSON.parse(text);
+                            throw new Error(data.error || `Login failed: ${response.status}`);
+                        } catch (e) {
+                            throw new Error(`Login failed: ${response.status} - ${text}`);
+                        }
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    console.log('Login successful:', data);
+                    
+                    // Store token and user data
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    localStorage.setItem('isLoggedIn', 'true');
+                    
+                    // Remove modal
+                    document.body.removeChild(modal);
+                    
+                    // Update token info
+                    updateTokenInfo();
+                    updateAuthLogsDisplay();
+                    
+                    // Reload the page
+                    if (confirm('Login successful! Reload page to apply changes?')) {
+                        window.location.reload();
+                    }
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            })
+            .catch(error => {
+                console.error('Login error:', error.message);
+                alert(`Login failed: ${error.message}`);
+                updateAuthLogsDisplay();
+            });
+        };
+    }
+
+    // =====================================================
+    // UTILITY FUNCTIONS
+    // =====================================================
+    
+    // Fix recipe link handling
     function setupLinkInterceptor() {
         document.addEventListener('click', function(e) {
             // Check if this is a recipe link
@@ -832,15 +1183,88 @@
                 console.error('Error loading recipe:', error);
             });
     }
+
+    // =====================================================
+    // UI COMPONENTS
+    // =====================================================
+
+    // Add a button to open the diagnostic panel
+    function addRecipeDiagnosticButton() {
+        const button = document.createElement('button');
+        button.textContent = '🔧';
+        button.id = 'recipe-diagnostic-button';
+        button.style.position = 'fixed';
+        button.style.bottom = '20px';
+        button.style.right = '20px';
+        button.style.zIndex = '9999';
+        button.style.width = '40px';
+        button.style.height = '40px';
+        button.style.backgroundColor = '#7f4937';
+        button.style.color = 'white';
+        button.style.border = 'none';
+        button.style.borderRadius = '50%';
+        button.style.cursor = 'pointer';
+        button.style.fontSize = '20px';
+        button.style.display = 'flex';
+        button.style.justifyContent = 'center';
+        button.style.alignItems = 'center';
+        button.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+        
+        // Add hover effect
+        button.onmouseover = function() {
+            this.style.backgroundColor = '#aa5f44';
+        };
+        button.onmouseout = function() {
+            this.style.backgroundColor = '#7f4937';
+        };
+        
+        // Add click handler
+        button.onclick = function() {
+            // Create panel if it doesn't exist
+            let panel = document.getElementById('recipe-diagnostic-panel');
+            if (!panel) {
+                panel = createRecipeDiagnosticPanel();
+            }
+            
+            // Show panel
+            panel.style.display = 'flex';
+            
+            // Update logs
+            updateLogsDisplay();
+        };
+        
+        document.body.appendChild(button);
+    }
+
+    // =====================================================
+    // INITIALIZATION
+    // =====================================================
     
-    // Initialize
+    // Initialize when DOM is loaded
     document.addEventListener('DOMContentLoaded', function() {
-        // Add the diagnostic button
-        setTimeout(addDiagnosticButton, 1000);
+        console.log('Diagnostic tools initializing...');
+        
+        // Add the diagnostic buttons after a short delay
+        setTimeout(function() {
+            addRecipeDiagnosticButton();
+        }, 1000);
         
         // Set up link interceptor to fix 404 issues
         setupLinkInterceptor();
-        
-        console.log('Recipe System Diagnostic Tool initialized');
     });
+
+    // Make key functions available globally
+    window.debugAuth = showAuthDiagnosticPanel;
+    window.debugRecipes = function() {
+        let panel = document.getElementById('recipe-diagnostic-panel');
+        if (!panel) {
+            panel = createRecipeDiagnosticPanel();
+        }
+        panel.style.display = 'flex';
+        updateLogsDisplay();
+    };
+    window.fixCategories = directCategoryFix;
+    window.testEndpoints = testApiEndpoints;
+    window.checkRecipes = checkRecipeData;
+
 })();
