@@ -230,42 +230,19 @@
         </footer>
     </div>
 
-        <!-- Core Functionality -->
+            <!-- Replace this section -->
     <script src="/public/js/main.js"></script>
     <script src="/public/js/navigation.js"></script>
     <script src="/public/js/recipe-core.js"></script>
     <script src="/public/js/forms.js"></script>
-
-    <!-- Admin Functionality (for admin pages only) -->
     <script src="/public/js/admin-core.js"></script>
     <script src="/public/js/recipe-editor.js"></script>
-
-    <!-- Development Tools (remove in production) -->
     <script src="/public/js/diagnostic-tools.js"></script>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set up newsletter form submission
-            const newsletterForm = document.querySelector('.newsletter-form');
-            if (newsletterForm) {
-                newsletterForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const emailInput = this.querySelector('.newsletter-input');
-                    if (emailInput && emailInput.value && isValidEmail(emailInput.value)) {
-                        alert(`Ačiū už prenumeratą! Naujienlaiškis bus siunčiamas adresu: ${emailInput.value}`);
-                        emailInput.value = '';
-                    } else {
-                        alert('Prašome įvesti teisingą el. pašto adresą.');
-                    }
-                });
-            }
-        });
-        
-        // Helper function to validate email
-        function isValidEmail(email) {
-            const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-            return re.test(String(email).toLowerCase());
-        }
-    </script>
+
+    <!-- With this correct version -->
+    <script src="js/main.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/recipe-core.js"></script>
+    <script src="js/forms.js"></script>
 </body>
 </html>
