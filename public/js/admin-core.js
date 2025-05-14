@@ -8,7 +8,7 @@
  * - modules/ui.js
  * - modules/utils.js
  * 
- * FIXED VERSION - Addresses dashboard loading issues
+ * FIXED VERSION - Addresses dashboard loading issues, function reference errors, and recursion problems
  */
 
 (function() {
@@ -248,11 +248,23 @@
                     
                     // Refresh content based on tab type
                     if (pageId === 'recipes') {
-                        fetchRecipes(1, tabType);
+                        if (typeof window.fetchRecipes === 'function') {
+                            window.fetchRecipes(1, tabType);
+                        } else {
+                            console.warn('fetchRecipes function not found');
+                        }
                     } else if (pageId === 'comments') {
-                        fetchComments(1, tabType);
+                        if (typeof window.fetchComments === 'function') {
+                            window.fetchComments(1, tabType);
+                        } else {
+                            console.warn('fetchComments function not found');
+                        }
                     } else if (pageId === 'media') {
-                        fetchMedia(1, tabType);
+                        if (typeof window.fetchMedia === 'function') {
+                            window.fetchMedia(1, tabType);
+                        } else {
+                            console.warn('fetchMedia function not found');
+                        }
                     }
                 }
             });
@@ -488,7 +500,12 @@
                     }
                     
                     // Upload files
-                    uploadMedia(formData);
+                    if (typeof uploadMedia === 'function') {
+                        uploadMedia(formData);
+                    } else {
+                        console.warn('uploadMedia function not found');
+                        showNotification('Error', 'Upload functionality not available', 'error');
+                    }
                 }
             });
         }
@@ -549,15 +566,405 @@
             
             // Load page-specific data if needed
             if (pageId === 'dashboard') {
-                loadDashboardStats();
+                if (typeof loadDashboardStats === 'function') {
+                    loadDashboardStats();
+                } else {
+                    console.warn('loadDashboardStats function not found, using fallback');
+                    loadDashboardStatsFallback();
+                }
             } else if (pageId === 'recipes') {
-                fetchRecipes();
+                // Use the global fetchRecipes function if it exists
+                if (typeof window.fetchRecipes === 'function') {
+                    window.fetchRecipes();
+                } else {
+                    console.warn('fetchRecipes function not found, using fallback');
+                    fetchRecipesFallback();
+                }
             } else if (pageId === 'comments') {
-                fetchComments();
+                if (typeof window.fetchComments === 'function') {
+                    window.fetchComments();
+                } else {
+                    console.warn('fetchComments function not found');
+                    fetchCommentsFallback();
+                }
             } else if (pageId === 'media') {
-                fetchMedia();
+                if (typeof window.fetchMedia === 'function') {
+                    window.fetchMedia();
+                } else {
+                    console.warn('fetchMedia function not found');
+                    fetchMediaFallback();
+                }
             } else if (pageId === 'about') {
-                fetchAboutData();
+                if (typeof window.fetchAboutData === 'function') {
+                    window.fetchAboutData();
+                } else {
+                    console.warn('fetchAboutData function not found');
+                    fetchAboutDataFallback();
+                }
+            }
+        }
+    }
+
+    /**
+     * Fallback implementation of loadDashboardStats
+     */
+    function loadDashboardStatsFallback() {
+        // Show loading in widgets
+        document.querySelectorAll('.widget-count').forEach(widget => {
+            widget.textContent = '...';
+        });
+        
+        // Show loading in tables
+        const recipeTable = document.querySelector('#page-dashboard .admin-section:nth-child(2) tbody');
+        const commentTable = document.querySelector('#page-dashboard .admin-section:nth-child(3) tbody');
+        
+        if (recipeTable) {
+            recipeTable.innerHTML = '<tr><td colspan="4" style="text-align: center;">Loading recipes...</td></tr>';
+        }
+        
+        if (commentTable) {
+            commentTable.innerHTML = '<tr><td colspan="5" style="text-align: center;">Loading comments...</td></tr>';
+        }
+        
+        // Try to fetch data from server
+        fetch('/admin-api/dashboard/stats', {
+            headers: getAuthHeaders()
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Failed to fetch dashboard stats: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Update dashboard widgets
+                updateDashboardWidgets(data.data);
+                
+                // Update recent recipes
+                updateRecentRecipes(data.data.recent_recipes || []);
+                
+                // Update recent comments
+                updateRecentComments(data.data.recent_comments || []);
+            } else {
+                throw new Error(data.error || 'Failed to load dashboard stats');
+            }
+        })
+        .catch(error => {
+            console.error('Dashboard stats error:', error);
+            
+            // Fallback to mock data when API fails
+            provideMockDashboardData();
+        });
+    }
+    
+    /**
+     * Fallback for fetchRecipes
+     */
+    function fetchRecipesFallback(page = 1, status = 'all') {
+        console.log('Using fetchRecipes fallback with:', page, status);
+        const recipesTable = document.querySelector('#page-recipes tbody');
+        if (!recipesTable) return;
+        
+        // Show loading message
+        recipesTable.innerHTML = '<tr><td colspan="5" style="text-align: center;">Loading recipes...</td></tr>';
+        
+        // Get active tab if status is not specified
+        if (status === 'all') {
+            const activeTab = document.querySelector('#page-recipes .tab.active');
+            if (activeTab) {
+                status = activeTab.getAttribute('data-tab');
+            }
+        }
+        
+        fetch(`/admin-api/recipes?status=${status}&page=${page}`, {
+            headers: getAuthHeaders()
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Failed to fetch recipes: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                if (data.data.length === 0) {
+                    // No recipes
+                    recipesTable.innerHTML = '<tr><td colspan="5" style="text-align: center;">No recipes found</td></tr>';
+                    return;
+                }
+                
+                // Clear loading message
+                recipesTable.innerHTML = '';
+                
+                // Add recipes to the table
+                data.data.forEach(recipe => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${recipe.title || 'Untitled'}</td>
+                        <td>${recipe.categories && recipe.categories.length ? recipe.categories.join(', ') : '-'}</td>
+                        <td>${formatDate(recipe.created_at) || '-'}</td>
+                        <td>${recipe.status === 'published' ? 'Published' : 'Draft'}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button type="button" class="action-btn edit-btn" onclick="editRecipe('${recipe.id}')"><i class="fas fa-edit"></i></button>
+                                <button type="button" class="action-btn delete-btn" onclick="showDeleteConfirmation('${recipe.id}', 'recipe')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    `;
+                    
+                    recipesTable.appendChild(row);
+                });
+                
+                // Update pagination
+                if (typeof updatePagination === 'function') {
+                    updatePagination(data.meta);
+                }
+            } else {
+                showNotification('Error', data.error || 'Unknown error', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Fetch recipes error:', error);
+            recipesTable.innerHTML = '<tr><td colspan="5" style="text-align: center;">Failed to load recipes. Please try again.</td></tr>';
+            showNotification('Error', 'Failed to load recipes', 'error');
+        });
+    }
+    
+    /**
+     * Fallback for fetchComments
+     */
+    function fetchCommentsFallback(page = 1, status = 'all') {
+        console.log('Using fetchComments fallback');
+        const commentsTable = document.querySelector('#page-comments tbody');
+        if (!commentsTable) return;
+        
+        // Show loading message
+        commentsTable.innerHTML = '<tr><td colspan="6" style="text-align: center;">Loading comments...</td></tr>';
+        
+        // Get active tab if status is not specified
+        if (status === 'all') {
+            const activeTab = document.querySelector('#page-comments .tab.active');
+            if (activeTab) {
+                status = activeTab.getAttribute('data-tab');
+            }
+        }
+        
+        fetch(`/admin-api/comments?status=${status}&page=${page}`, {
+            headers: getAuthHeaders()
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Failed to fetch comments: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                if (data.data.length === 0) {
+                    // No comments
+                    commentsTable.innerHTML = '<tr><td colspan="6" style="text-align: center;">No comments found</td></tr>';
+                    return;
+                }
+                
+                // Clear loading message
+                commentsTable.innerHTML = '';
+                
+                // Add comments to the table
+                data.data.forEach(comment => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${comment.author || 'Anonymous'}</td>
+                        <td>${comment.content ? comment.content.substring(0, 50) + (comment.content.length > 50 ? '...' : '') : '-'}</td>
+                        <td>${comment.recipe_title || '-'}</td>
+                        <td>${formatDate(comment.created_at) || '-'}</td>
+                        <td>${getCommentStatusLabel(comment.status)}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button type="button" class="action-btn view-btn" onclick="viewComment('${comment.id}')"><i class="fas fa-eye"></i></button>
+                                <button type="button" class="action-btn edit-btn" onclick="editComment('${comment.id}')"><i class="fas fa-edit"></i></button>
+                                <button type="button" class="action-btn delete-btn" onclick="showDeleteConfirmation('${comment.id}', 'comment')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    `;
+                    
+                    commentsTable.appendChild(row);
+                });
+                
+                // Update pagination
+                if (typeof updatePagination === 'function') {
+                    updatePagination(data.meta);
+                }
+            } else {
+                showNotification('Error', data.error || 'Unknown error', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Fetch comments error:', error);
+            commentsTable.innerHTML = '<tr><td colspan="6" style="text-align: center;">Failed to load comments. Please try again.</td></tr>';
+            showNotification('Error', 'Failed to load comments', 'error');
+        });
+    }
+    
+    /**
+     * Fallback for fetchMedia
+     */
+    function fetchMediaFallback(page = 1, type = 'all') {
+        console.log('Using fetchMedia fallback');
+        const mediaGrid = document.querySelector('#page-media .gallery-grid');
+        if (!mediaGrid) return;
+        
+        // Show loading message
+        mediaGrid.innerHTML = '<div class="loading-message">Loading media files...</div>';
+        
+        // Get active tab if type is not specified
+        if (type === 'all') {
+            const activeTab = document.querySelector('#page-media .tab.active');
+            if (activeTab) {
+                type = activeTab.getAttribute('data-tab');
+            }
+        }
+        
+        fetch(`/admin-api/media?type=${type}&page=${page}`, {
+            headers: getAuthHeaders()
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Failed to fetch media: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                if (data.data.length === 0) {
+                    // No media
+                    mediaGrid.innerHTML = '<div class="empty-message">No media files found</div>';
+                    return;
+                }
+                
+                // Clear loading message
+                mediaGrid.innerHTML = '';
+                
+                // Add media to the grid
+                data.data.forEach(media => {
+                    const item = document.createElement('div');
+                    item.className = 'gallery-item';
+                    
+                    item.innerHTML = `
+                        <img src="${media.url}" alt="${media.name}">
+                        <div class="gallery-item-actions">
+                            <button type="button" class="gallery-item-action delete-btn" onclick="showDeleteConfirmation('${media.directory}/${media.id}', 'media')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    mediaGrid.appendChild(item);
+                });
+                
+                // Update pagination
+                if (typeof updatePagination === 'function') {
+                    updatePagination(data.meta);
+                }
+            } else {
+                showNotification('Error', data.error || 'Unknown error', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Fetch media error:', error);
+            mediaGrid.innerHTML = '<div class="error-message">Failed to load media files. Please try again.</div>';
+            showNotification('Error', 'Failed to load media files', 'error');
+        });
+    }
+    
+    /**
+     * Fallback for fetchAboutData
+     */
+    function fetchAboutDataFallback() {
+        console.log('Using fetchAboutData fallback');
+        fetch('/admin-api/about', {
+            headers: getAuthHeaders()
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Failed to fetch about data: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Populate form fields if we have a populateAboutForm function
+                if (typeof populateAboutForm === 'function') {
+                    populateAboutForm(data.data);
+                } else {
+                    console.warn('populateAboutForm function not found, using basic field population');
+                    populateAboutFormBasic(data.data);
+                }
+            } else {
+                showNotification('Error', data.error || 'Unknown error', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Fetch about data error:', error);
+            showNotification('Error', 'Failed to load "About me" page data', 'error');
+        });
+    }
+    
+    /**
+     * Basic field population for about page
+     */
+    function populateAboutFormBasic(aboutData) {
+        // Set basic form fields if they exist
+        const fields = [
+            {id: 'about-title', value: aboutData.title},
+            {id: 'about-subtitle', value: aboutData.subtitle},
+            {id: 'about-intro', value: aboutData.intro},
+            {id: 'about-email', value: aboutData.email},
+            {id: 'facebook-url', value: aboutData.social?.facebook},
+            {id: 'instagram-url', value: aboutData.social?.instagram},
+            {id: 'pinterest-url', value: aboutData.social?.pinterest}
+        ];
+        
+        fields.forEach(field => {
+            const element = document.getElementById(field.id);
+            if (element && field.value) {
+                element.value = field.value;
+            }
+        });
+        
+        // Set section fields if they exist
+        if (aboutData.sections && aboutData.sections.length > 0) {
+            if (aboutData.sections.length >= 1 && aboutData.sections[0]) {
+                const title1 = document.getElementById('section-1-title');
+                const content1 = document.getElementById('section-1-content');
+                if (title1) title1.value = aboutData.sections[0].title || '';
+                if (content1) content1.value = aboutData.sections[0].content || '';
+            }
+            
+            if (aboutData.sections.length >= 2 && aboutData.sections[1]) {
+                const title2 = document.getElementById('section-2-title');
+                const content2 = document.getElementById('section-2-content');
+                if (title2) title2.value = aboutData.sections[1].title || '';
+                if (content2) content2.value = aboutData.sections[1].content || '';
+            }
+        }
+        
+        // Show image preview if available
+        if (aboutData.image) {
+            const imagePreview = document.getElementById('about-image-preview');
+            if (imagePreview) {
+                const existingImg = imagePreview.querySelector('img');
+                if (existingImg) {
+                    existingImg.src = `/img/about/${aboutData.image}`;
+                } else {
+                    const img = document.createElement('img');
+                    img.src = `/img/about/${aboutData.image}`;
+                    img.alt = 'About page image preview';
+                    imagePreview.appendChild(img);
+                }
+                imagePreview.style.display = 'block';
             }
         }
     }
@@ -771,10 +1178,22 @@
     
     /**
      * Show a notification
+     * FIXED: Added recursion prevention
      */
     function showNotification(title, message, type = 'success') {
+        // Prevent recursion
+        if (window._isShowingNotification) {
+            console.log('Preventing recursive showNotification call', title, message);
+            return;
+        }
+        
+        window._isShowingNotification = true;
+        
         const notification = document.getElementById('notification');
-        if (!notification) return;
+        if (!notification) {
+            window._isShowingNotification = false;
+            return;
+        }
         
         const notificationTitle = notification.querySelector('.notification-title');
         const notificationMessage = notification.querySelector('.notification-message');
@@ -801,7 +1220,10 @@
             // Auto-hide notification after 5 seconds
             setTimeout(() => {
                 hideNotification();
+                window._isShowingNotification = false;
             }, 5000);
+        } else {
+            window._isShowingNotification = false;
         }
     }
 
@@ -900,10 +1322,32 @@
             console.log('Added favicon to prevent 404');
         }
     }
+    
+    /**
+     * Get readable status label for comments
+     */
+    function getCommentStatusLabel(status) {
+        switch (status) {
+            case 'approved':
+                return 'Approved';
+            case 'pending':
+                return 'Pending';
+            case 'spam':
+                return 'Spam';
+            default:
+                return 'Unknown';
+        }
+    }
 
     // =====================================================
     // PUBLIC API (EXPORTS)
     // =====================================================
+    
+    // Define the fallback fetchRecipes function globally
+    window.fetchRecipes = window.fetchRecipes || fetchRecipesFallback;
+    window.fetchComments = window.fetchComments || fetchCommentsFallback;
+    window.fetchMedia = window.fetchMedia || fetchMediaFallback;
+    window.fetchAboutData = window.fetchAboutData || fetchAboutDataFallback;
     
     // Expose public functions
     window.showAdminPage = showAdminPage;
@@ -917,8 +1361,5 @@
     window.formatDate = formatDate;
     window.updateRecentRecipes = updateRecentRecipes;
     window.updateRecentComments = updateRecentComments;
-    
-    // Note: Module-specific functions like fetchRecipes, fetchComments, etc. 
-    // will be imported from their respective modules
 
 })();

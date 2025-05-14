@@ -588,12 +588,50 @@ function searchRecipes(query) {
 }
 
 // Show notification if function exists
-function showNotification(title, message, type) {
-    if (typeof window.showNotification === 'function') {
-        window.showNotification(title, message, type);
+function showNotification(title, message, type = 'success') {
+    // Use a flag to prevent recursive calls
+    if (window._isShowingNotification) {
+        console.warn("Preventing recursive showNotification call");
+        return;
+    }
+    
+    window._isShowingNotification = true;
+    
+    const notification = document.getElementById('notification');
+    if (!notification) {
+        window._isShowingNotification = false;
+        return;
+    }
+    
+    const notificationTitle = notification.querySelector('.notification-title');
+    const notificationMessage = notification.querySelector('.notification-message');
+    const notificationIcon = notification.querySelector('.notification-icon i');
+    
+    if (notificationTitle && notificationMessage && notificationIcon) {
+        // Set notification content
+        notificationTitle.textContent = title;
+        notificationMessage.textContent = message;
+        
+        // Set notification type
+        notification.className = 'notification';
+        if (type === 'success') {
+            notification.classList.add('notification-success');
+            notificationIcon.className = 'fas fa-check-circle';
+        } else if (type === 'error') {
+            notification.classList.add('notification-error');
+            notificationIcon.className = 'fas fa-exclamation-circle';
+        }
+        
+        // Show notification
+        notification.classList.add('show');
+        
+        // Auto-hide notification after 5 seconds
+        setTimeout(() => {
+            hideNotification();
+            window._isShowingNotification = false;
+        }, 5000);
     } else {
-        // Fallback to alert
-        alert(`${title}: ${message}`);
+        window._isShowingNotification = false;
     }
 }
 

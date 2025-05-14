@@ -1,15 +1,12 @@
 /**
- * Recipe Editor - Comprehensive Solution
+ * Enhanced Recipe Editor - Fixed Version
  * 
- * This script handles recipe creation and editing functionality with fixes for:
- * - Proper category handling during save/update
- * - FormData vs JSON handling to ensure all data is sent correctly
- * - Image upload and preview handling
- * - Form population and validation
+ * This file fixes issues with recursive showNotification calls and missing function references
+ * in the recipe editor functionality.
  */
 
 (function() {
-    console.log('Recipe Editor - Comprehensive Solution loaded');
+    console.log('Recipe Editor - Fixed Version loaded');
     
     /**
      * Save Recipe - Creates a new recipe
@@ -137,7 +134,16 @@
             createEditForm(recipe);
             
             // Show the edit page
-            showAdminPage('edit-recipe');
+            if (typeof window.showAdminPage === 'function') {
+                window.showAdminPage('edit-recipe');
+            } else {
+                console.error('showAdminPage function not found');
+                // Fallback
+                const pages = document.querySelectorAll('.admin-page');
+                pages.forEach(page => page.style.display = 'none');
+                const editPage = document.getElementById('page-edit-recipe');
+                if (editPage) editPage.style.display = 'block';
+            }
             
             // Show success notification
             showNotification('Sėkmė', 'Receptas paruoštas redagavimui', 'success');
@@ -384,8 +390,45 @@
         
         // Navigate to recipes page after a short delay
         setTimeout(() => {
-            showAdminPage('recipes');
+            // First check if window.fetchRecipes exists, if not, define a fallback
+            if (typeof window.fetchRecipes !== 'function') {
+                console.warn('fetchRecipes function not found in global scope, creating fallback');
+                window.fetchRecipes = function(page = 1, status = 'all') {
+                    console.log('Fallback fetchRecipes called');
+                    // This is just a placeholder that will be replaced by the actual implementation
+                    // in admin-core.js
+                };
+            }
+            
+            // Use the safe showAdminPage function
+            safeShowAdminPage('recipes');
         }, 1500);
+    }
+    
+    /**
+     * Safe wrapper for showAdminPage to handle missing function
+     */
+    function safeShowAdminPage(pageId) {
+        if (typeof window.showAdminPage === 'function') {
+            window.showAdminPage(pageId);
+        } else {
+            console.error('showAdminPage function not available');
+            // Fallback: try to show the page directly
+            const pages = document.querySelectorAll('.admin-page');
+            pages.forEach(page => {
+                page.style.display = 'none';
+            });
+            
+            const targetPage = document.getElementById(`page-${pageId}`);
+            if (targetPage) {
+                targetPage.style.display = 'block';
+            }
+            
+            // Try to update content if needed
+            if (pageId === 'recipes' && typeof window.fetchRecipes === 'function') {
+                window.fetchRecipes();
+            }
+        }
     }
     
     /**
@@ -554,7 +597,7 @@
                     const removeBtn = imagePreview.querySelector('.remove-image');
                     if (removeBtn) {
                         removeBtn.addEventListener('click', function() {
-                            imagePreview.innerHTML = '';
+                            imagePreview.innerHTML = '<button type="button" class="remove-image"><i class="fas fa-times"></i></button>';
                             imagePreview.style.display = 'none';
                             
                             // Reset file input
@@ -627,6 +670,8 @@
                     const preview = container.querySelector('#image-preview');
                     
                     reader.onload = function(e) {
+                        if (!preview) return;
+                        
                         preview.innerHTML = `
                             <button type="button" class="remove-image"><i class="fas fa-times"></i></button>
                             <img src="${e.target.result}" alt="Image preview" style="max-width: 100%; height: auto;">
@@ -637,7 +682,7 @@
                         const removeBtn = preview.querySelector('.remove-image');
                         if (removeBtn) {
                             removeBtn.onclick = function() {
-                                preview.innerHTML = '';
+                                preview.innerHTML = '<button type="button" class="remove-image"><i class="fas fa-times"></i></button>';
                                 preview.style.display = 'none';
                                 imageInput.value = '';
                             };
@@ -775,5 +820,57 @@
         });
     }
     
-    console.log('Recipe Editor - Comprehensive Solution successfully initialized');
+    // Ensure showNotification is properly defined to prevent recursion
+    if (typeof window.showNotification !== 'function') {
+        window.showNotification = function(title, message, type = 'success') {
+            // Prevent recursion by using a semaphore
+            if (window._isShowingNotification) {
+                console.log('Preventing recursive showNotification call:', title, message);
+                return;
+            }
+            
+            window._isShowingNotification = true;
+            
+            const notification = document.getElementById('notification');
+            if (!notification) {
+                window._isShowingNotification = false;
+                return;
+            }
+            
+            const notificationTitle = notification.querySelector('.notification-title');
+            const notificationMessage = notification.querySelector('.notification-message');
+            const notificationIcon = notification.querySelector('.notification-icon i');
+            
+            if (notificationTitle && notificationMessage && notificationIcon) {
+                // Set notification content
+                notificationTitle.textContent = title;
+                notificationMessage.textContent = message;
+                
+                // Set notification type
+                notification.className = 'notification';
+                if (type === 'success') {
+                    notification.classList.add('notification-success');
+                    notificationIcon.className = 'fas fa-check-circle';
+                } else if (type === 'error') {
+                    notification.classList.add('notification-error');
+                    notificationIcon.className = 'fas fa-exclamation-circle';
+                }
+                
+                // Show notification
+                notification.classList.add('show');
+                
+                // Auto-hide notification after 5 seconds
+                setTimeout(() => {
+                    if (notification) {
+                        notification.classList.remove('show');
+                    }
+                    window._isShowingNotification = false;
+                }, 5000);
+            } else {
+                window._isShowingNotification = false;
+            }
+        };
+    }
+    
+    console.log('Recipe Editor - Fixed Version successfully initialized');
 })();
