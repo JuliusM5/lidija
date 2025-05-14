@@ -1,14 +1,12 @@
 /**
- * Admin Core - Consolidated Admin Panel Functionality
+ * Updated version of admin-core.js with fixes for the showDeleteConfirmation error
  * 
- * This file combines core admin panel functionality from:
- * - admin.js
- * - api-connector.js
- * - modules/auth.js
- * - modules/ui.js
- * - modules/utils.js
+ * The main changes are:
+ * 1. Explicitly expose key functions to window object
+ * 2. Fix function references
+ * 3. Ensure proper event delegation for delete buttons
  * 
- * FIXED VERSION - Addresses dashboard loading issues, function reference errors, and recursion problems
+ * Replace the content of your existing public/js/admin-core.js with this code
  */
 
 (function() {
@@ -35,6 +33,9 @@
         
         // Fix favicon
         addFaviconLink();
+        
+        // Fix delete confirmation buttons
+        fixDeleteConfirmationButtons();
     });
 
     // =====================================================
@@ -69,49 +70,6 @@
         }
     }
     
-    /**
-     * Login user with username and password
-     */
-    function loginUser(username, password) {
-        fetch('/admin-api/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Login failed: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // Store authentication data
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user || {}));
-                localStorage.setItem('isLoggedIn', 'true');
-                
-                // Hide login page, show dashboard
-                document.getElementById('login-page').style.display = 'none';
-                document.getElementById('admin-dashboard').style.display = 'block';
-                
-                // Load dashboard
-                showAdminPage('dashboard');
-                
-                // Show success notification
-                showNotification('Success', 'Login successful!', 'success');
-            } else {
-                showNotification('Error', data.error || 'Login failed', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Login error:', error);
-            showNotification('Error', 'Login failed. Please check your credentials and try again.', 'error');
-        });
-    }
-
     /**
      * Check login status on page load
      */
@@ -218,6 +176,49 @@
                     closeModal(modal.id);
                 }
             });
+        });
+        
+        // Add event delegation for delete buttons
+        document.addEventListener('click', function(event) {
+            const deleteBtn = event.target.closest('.action-btn.delete-btn');
+            if (deleteBtn) {
+                const itemId = deleteBtn.getAttribute('data-item-id');
+                const itemType = deleteBtn.getAttribute('data-item-type');
+                
+                if (itemId && itemType) {
+                    showDeleteConfirmation(itemId, itemType);
+                }
+            }
+        });
+    }
+    
+    /**
+     * Fix any existing inline onclick attributes for delete confirmation
+     */
+    function fixDeleteConfirmationButtons() {
+        // Find delete buttons with inline onclick
+        const deleteButtons = document.querySelectorAll('.action-btn.delete-btn[onclick*="showDeleteConfirmation"]');
+        
+        deleteButtons.forEach(button => {
+            const onclickAttr = button.getAttribute('onclick');
+            if (onclickAttr && onclickAttr.includes('showDeleteConfirmation')) {
+                // Extract parameters
+                const match = onclickAttr.match(/showDeleteConfirmation\s*\(\s*['"](.+?)['"],\s*['"](.+?)['"]\s*\)/);
+                
+                if (match && match.length === 3) {
+                    const itemId = match[1];
+                    const itemType = match[2];
+                    
+                    // Remove the onclick attribute
+                    button.removeAttribute('onclick');
+                    
+                    // Add data attributes
+                    button.setAttribute('data-item-id', itemId);
+                    button.setAttribute('data-item-type', itemType);
+                    
+                    console.log(`Fixed delete button for ${itemType} with ID: ${itemId}`);
+                }
+            }
         });
     }
 
@@ -602,6 +603,9 @@
                     fetchAboutDataFallback();
                 }
             }
+            
+            // Fix any delete confirmation buttons that might have been added
+            setTimeout(fixDeleteConfirmationButtons, 100);
         }
     }
 
@@ -708,11 +712,20 @@
                         <td>${recipe.status === 'published' ? 'Published' : 'Draft'}</td>
                         <td>
                             <div class="action-buttons">
-                                <button type="button" class="action-btn edit-btn" onclick="editRecipe('${recipe.id}')"><i class="fas fa-edit"></i></button>
-                                <button type="button" class="action-btn delete-btn" onclick="showDeleteConfirmation('${recipe.id}', 'recipe')"><i class="fas fa-trash"></i></button>
+                                <button type="button" class="action-btn edit-btn" data-recipe-id="${recipe.id}"><i class="fas fa-edit"></i></button>
+                                <button type="button" class="action-btn delete-btn" data-item-id="${recipe.id}" data-item-type="recipe"><i class="fas fa-trash"></i></button>
                             </div>
                         </td>
                     `;
+                    
+                    // Add event listener for edit button
+                    const editBtn = row.querySelector('.edit-btn');
+                    if (editBtn) {
+                        editBtn.addEventListener('click', function() {
+                            const recipeId = this.getAttribute('data-recipe-id');
+                            editRecipe(recipeId);
+                        });
+                    }
                     
                     recipesTable.appendChild(row);
                 });
@@ -721,6 +734,9 @@
                 if (typeof updatePagination === 'function') {
                     updatePagination(data.meta);
                 }
+                
+                // Fix delete buttons
+                fixDeleteConfirmationButtons();
             } else {
                 showNotification('Error', data.error || 'Unknown error', 'error');
             }
@@ -783,12 +799,29 @@
                         <td>${getCommentStatusLabel(comment.status)}</td>
                         <td>
                             <div class="action-buttons">
-                                <button type="button" class="action-btn view-btn" onclick="viewComment('${comment.id}')"><i class="fas fa-eye"></i></button>
-                                <button type="button" class="action-btn edit-btn" onclick="editComment('${comment.id}')"><i class="fas fa-edit"></i></button>
-                                <button type="button" class="action-btn delete-btn" onclick="showDeleteConfirmation('${comment.id}', 'comment')"><i class="fas fa-trash"></i></button>
+                                <button type="button" class="action-btn view-btn" data-comment-id="${comment.id}"><i class="fas fa-eye"></i></button>
+                                <button type="button" class="action-btn edit-btn" data-comment-id="${comment.id}"><i class="fas fa-edit"></i></button>
+                                <button type="button" class="action-btn delete-btn" data-item-id="${comment.id}" data-item-type="comment"><i class="fas fa-trash"></i></button>
                             </div>
                         </td>
                     `;
+                    
+                    // Add event listeners
+                    const viewBtn = row.querySelector('.view-btn');
+                    if (viewBtn) {
+                        viewBtn.addEventListener('click', function() {
+                            const commentId = this.getAttribute('data-comment-id');
+                            viewComment(commentId);
+                        });
+                    }
+                    
+                    const editBtn = row.querySelector('.edit-btn');
+                    if (editBtn) {
+                        editBtn.addEventListener('click', function() {
+                            const commentId = this.getAttribute('data-comment-id');
+                            editComment(commentId);
+                        });
+                    }
                     
                     commentsTable.appendChild(row);
                 });
@@ -797,6 +830,9 @@
                 if (typeof updatePagination === 'function') {
                     updatePagination(data.meta);
                 }
+                
+                // Fix delete buttons
+                fixDeleteConfirmationButtons();
             } else {
                 showNotification('Error', data.error || 'Unknown error', 'error');
             }
@@ -852,10 +888,12 @@
                     const item = document.createElement('div');
                     item.className = 'gallery-item';
                     
+                    const mediaId = media.directory ? `${media.directory}/${media.id}` : media.id;
+                    
                     item.innerHTML = `
                         <img src="${media.url}" alt="${media.name}">
                         <div class="gallery-item-actions">
-                            <button type="button" class="gallery-item-action delete-btn" onclick="showDeleteConfirmation('${media.directory}/${media.id}', 'media')">
+                            <button type="button" class="gallery-item-action delete-btn" data-item-id="${mediaId}" data-item-type="media">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -868,6 +906,9 @@
                 if (typeof updatePagination === 'function') {
                     updatePagination(data.meta);
                 }
+                
+                // Fix delete buttons
+                fixDeleteConfirmationButtons();
             } else {
                 showNotification('Error', data.error || 'Unknown error', 'error');
             }
@@ -967,6 +1008,120 @@
                 imagePreview.style.display = 'block';
             }
         }
+    }
+
+    /**
+     * Update dashboard widgets with statistics
+     */
+    function updateDashboardWidgets(data) {
+        // Update recipe count
+        const recipeWidget = document.querySelector('.widget:nth-child(1) .widget-count');
+        if (recipeWidget && data.recipes) {
+            recipeWidget.textContent = data.recipes.total || 0;
+        }
+        
+        // Update comment count
+        const commentWidget = document.querySelector('.widget:nth-child(2) .widget-count');
+        if (commentWidget && data.comments) {
+            commentWidget.textContent = data.comments.total || 0;
+        }
+        
+        // Update media count
+        const mediaWidget = document.querySelector('.widget:nth-child(3) .widget-count');
+        if (mediaWidget && data.media) {
+            mediaWidget.textContent = data.media.total || 0;
+        }
+    }
+
+    /**
+     * Update recent recipes table - FIXED FUNCTION
+     */
+    function updateRecentRecipes(recipes) {
+        const table = document.querySelector('#page-dashboard .admin-section:nth-child(2) tbody');
+        if (!table) return;
+        
+        if (!recipes || recipes.length === 0) {
+            table.innerHTML = '<tr><td colspan="4" style="text-align: center;">No recipes</td></tr>';
+            return;
+        }
+        
+        table.innerHTML = '';
+        
+        recipes.forEach(recipe => {
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td>${recipe.title || 'Untitled'}</td>
+                <td>${recipe.categories && recipe.categories.length ? recipe.categories.join(', ') : '-'}</td>
+                <td>${formatDate(recipe.created_at) || '-'}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button type="button" class="action-btn edit-btn" data-recipe-id="${recipe.id}"><i class="fas fa-edit"></i></button>
+                        <button type="button" class="action-btn delete-btn" data-item-id="${recipe.id}" data-item-type="recipe"><i class="fas fa-trash"></i></button>
+                    </div>
+                </td>
+            `;
+            
+            // Add event listener for edit button
+            const editBtn = row.querySelector('.edit-btn');
+            if (editBtn) {
+                editBtn.addEventListener('click', function() {
+                    const recipeId = this.getAttribute('data-recipe-id');
+                    editRecipe(recipeId);
+                });
+            }
+            
+            table.appendChild(row);
+        });
+        
+        // Fix delete buttons
+        fixDeleteConfirmationButtons();
+    }
+
+    /**
+     * Update recent comments table - FIXED FUNCTION
+     */
+    function updateRecentComments(comments) {
+        const table = document.querySelector('#page-dashboard .admin-section:nth-child(3) tbody');
+        if (!table) return;
+        
+        if (!comments || comments.length === 0) {
+            table.innerHTML = '<tr><td colspan="5" style="text-align: center;">No comments</td></tr>';
+            return;
+        }
+        
+        table.innerHTML = '';
+        
+        comments.forEach(comment => {
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td>${comment.author || 'Anonymous'}</td>
+                <td>${comment.content ? comment.content.substring(0, 50) + (comment.content.length > 50 ? '...' : '') : '-'}</td>
+                <td>${comment.recipe_title || '-'}</td>
+                <td>${formatDate(comment.created_at) || '-'}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button type="button" class="action-btn view-btn" data-comment-id="${comment.id}"><i class="fas fa-eye"></i></button>
+                        <button type="button" class="action-btn delete-btn" data-item-id="${comment.id}" data-item-type="comment"><i class="fas fa-trash"></i></button>
+                    </div>
+                </td>
+            `;
+            
+            // Add event listener for view button
+            const viewBtn = row.querySelector('.view-btn');
+            if (viewBtn) {
+                viewBtn.addEventListener('click', function() {
+                    const commentId = this.getAttribute('data-comment-id');
+                    viewComment(commentId);
+                });
+            }
+            
+            table.appendChild(row);
+        });
+        
+        // Fix delete buttons
+        fixDeleteConfirmationButtons();
     }
 
     /**
@@ -1082,96 +1237,6 @@
         showNotification('Information', 'Using demo data since server is unavailable', 'error');
     }
 
-    /**
-     * Update dashboard widgets with statistics
-     */
-    function updateDashboardWidgets(data) {
-        // Update recipe count
-        const recipeWidget = document.querySelector('.widget:nth-child(1) .widget-count');
-        if (recipeWidget && data.recipes) {
-            recipeWidget.textContent = data.recipes.total || 0;
-        }
-        
-        // Update comment count
-        const commentWidget = document.querySelector('.widget:nth-child(2) .widget-count');
-        if (commentWidget && data.comments) {
-            commentWidget.textContent = data.comments.total || 0;
-        }
-        
-        // Update media count
-        const mediaWidget = document.querySelector('.widget:nth-child(3) .widget-count');
-        if (mediaWidget && data.media) {
-            mediaWidget.textContent = data.media.total || 0;
-        }
-    }
-
-    /**
-     * Update recent recipes table - FIXED FUNCTION
-     */
-    function updateRecentRecipes(recipes) {
-        const table = document.querySelector('#page-dashboard .admin-section:nth-child(2) tbody');
-        if (!table) return;
-        
-        if (!recipes || recipes.length === 0) {
-            table.innerHTML = '<tr><td colspan="4" style="text-align: center;">No recipes</td></tr>';
-            return;
-        }
-        
-        table.innerHTML = '';
-        
-        recipes.forEach(recipe => {
-            const row = document.createElement('tr');
-            
-            row.innerHTML = `
-                <td>${recipe.title || 'Untitled'}</td>
-                <td>${recipe.categories && recipe.categories.length ? recipe.categories.join(', ') : '-'}</td>
-                <td>${formatDate(recipe.created_at) || '-'}</td>
-                <td>
-                    <div class="action-buttons">
-                        <button type="button" class="action-btn edit-btn" onclick="editRecipe('${recipe.id}')"><i class="fas fa-edit"></i></button>
-                        <button type="button" class="action-btn delete-btn" onclick="showDeleteConfirmation('${recipe.id}', 'recipe')"><i class="fas fa-trash"></i></button>
-                    </div>
-                </td>
-            `;
-            
-            table.appendChild(row);
-        });
-    }
-
-    /**
-     * Update recent comments table - FIXED FUNCTION
-     */
-    function updateRecentComments(comments) {
-        const table = document.querySelector('#page-dashboard .admin-section:nth-child(3) tbody');
-        if (!table) return;
-        
-        if (!comments || comments.length === 0) {
-            table.innerHTML = '<tr><td colspan="5" style="text-align: center;">No comments</td></tr>';
-            return;
-        }
-        
-        table.innerHTML = '';
-        
-        comments.forEach(comment => {
-            const row = document.createElement('tr');
-            
-            row.innerHTML = `
-                <td>${comment.author || 'Anonymous'}</td>
-                <td>${comment.content ? comment.content.substring(0, 50) + (comment.content.length > 50 ? '...' : '') : '-'}</td>
-                <td>${comment.recipe_title || '-'}</td>
-                <td>${formatDate(comment.created_at) || '-'}</td>
-                <td>
-                    <div class="action-buttons">
-                        <button type="button" class="action-btn view-btn" onclick="viewComment('${comment.id}')"><i class="fas fa-eye"></i></button>
-                        <button type="button" class="action-btn delete-btn" onclick="showDeleteConfirmation('${comment.id}', 'comment')"><i class="fas fa-trash"></i></button>
-                    </div>
-                </td>
-            `;
-            
-            table.appendChild(row);
-        });
-    }
-
     // =====================================================
     // NOTIFICATIONS
     // =====================================================
@@ -1260,6 +1325,126 @@
     // =====================================================
     
     /**
+     * Show delete confirmation dialog
+     */
+    function showDeleteConfirmation(itemId, itemType) {
+        console.log(`Showing delete confirmation for ${itemType}: ${itemId}`);
+        
+        // Store current item information
+        setCurrentItem(itemId, itemType);
+        
+        // Show confirmation dialog
+        const modal = document.getElementById('delete-modal');
+        if (modal) {
+            // Update title if needed
+            const modalBody = modal.querySelector('.modal-body p');
+            if (modalBody) {
+                const itemTypeName = getItemTypeLabel(itemType);
+                modalBody.textContent = `Ar tikrai norite ištrinti šį ${itemTypeName.toLowerCase()}? Šio veiksmo nebus galima atšaukti.`;
+            }
+            
+            modal.classList.add('show');
+        }
+    }
+    
+    /**
+     * Delete the current item
+     */
+    function deleteItem() {
+        // Close the modal
+        closeModal('delete-modal');
+        
+        if (!currentItemId || !currentItemType) {
+            showNotification('Error', 'No item selected', 'error');
+            return;
+        }
+        
+        // Prepare request URL and method
+        let url, method, body;
+        
+        switch (currentItemType) {
+            case 'recipe':
+                url = `/admin-api/recipes/${currentItemId}`;
+                method = 'DELETE';
+                body = null;
+                break;
+            case 'comment':
+                url = `/admin-api/comments/${currentItemId}`;
+                method = 'DELETE';
+                body = null;
+                break;
+            case 'media':
+                // For media, the ID is in format "directory/filename"
+                const parts = currentItemId.split('/');
+                if (parts.length !== 2) {
+                    showNotification('Error', 'Invalid media ID', 'error');
+                    return;
+                }
+                url = `/admin-api/media/${parts[0]}/${parts[1]}`;
+                method = 'DELETE';
+                body = null;
+                break;
+            default:
+                showNotification('Error', 'Unknown item type', 'error');
+                return;
+        }
+        
+        // Show loading notification
+        showNotification('Information', 'Deleting...', 'success');
+        
+        // Send delete request
+        fetch(url, {
+            method: method,
+            headers: getAuthHeaders(),
+            body: body
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Failed to delete item: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                const itemTypeText = getItemTypeLabel(currentItemType);
+                
+                // Show success notification
+                showNotification('Success', `${itemTypeText} deleted successfully!`, 'success');
+                
+                // Reload data based on item type
+                if (currentItemType === 'recipe') {
+                    if (typeof window.fetchRecipes === 'function') {
+                        window.fetchRecipes();
+                    } else {
+                        fetchRecipesFallback();
+                    }
+                } else if (currentItemType === 'comment') {
+                    if (typeof window.fetchComments === 'function') {
+                        window.fetchComments();
+                    } else {
+                        fetchCommentsFallback();
+                    }
+                } else if (currentItemType === 'media') {
+                    if (typeof window.fetchMedia === 'function') {
+                        window.fetchMedia();
+                    } else {
+                        fetchMediaFallback();
+                    }
+                }
+                
+                // Clear current item
+                clearCurrentItem();
+            } else {
+                showNotification('Error', data.error || 'Unknown error', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Delete item error:', error);
+            showNotification('Error', `Error deleting item: ${error.message}`, 'error');
+        });
+    }
+
+    /**
      * Store information about the currently selected item
      */
     function setCurrentItem(itemId, itemType) {
@@ -1283,6 +1468,22 @@
     function clearCurrentItem() {
         currentItemId = null;
         currentItemType = null;
+    }
+    
+    /**
+     * Get a human readable label for an item type
+     */
+    function getItemTypeLabel(itemType) {
+        switch (itemType) {
+            case 'recipe':
+                return 'Receptas';
+            case 'comment':
+                return 'Komentaras';
+            case 'media':
+                return 'Medijos failas';
+            default:
+                return 'Elementas';
+        }
     }
 
     /**
@@ -1340,16 +1541,10 @@
     }
 
     // =====================================================
-    // PUBLIC API (EXPORTS)
+    // EXPOSE PUBLIC FUNCTIONS
     // =====================================================
     
-    // Define the fallback fetchRecipes function globally
-    window.fetchRecipes = window.fetchRecipes || fetchRecipesFallback;
-    window.fetchComments = window.fetchComments || fetchCommentsFallback;
-    window.fetchMedia = window.fetchMedia || fetchMediaFallback;
-    window.fetchAboutData = window.fetchAboutData || fetchAboutDataFallback;
-    
-    // Expose public functions
+    // Explicitly expose key functions to the global scope
     window.showAdminPage = showAdminPage;
     window.logout = logout;
     window.getAuthHeaders = getAuthHeaders;
@@ -1361,5 +1556,11 @@
     window.formatDate = formatDate;
     window.updateRecentRecipes = updateRecentRecipes;
     window.updateRecentComments = updateRecentComments;
+    window.showDeleteConfirmation = showDeleteConfirmation;  // Important! This fixes the main issue
+    window.deleteItem = deleteItem;  // Also expose deleteItem
+    window.fetchRecipes = window.fetchRecipes || fetchRecipesFallback;
+    window.fetchComments = window.fetchComments || fetchCommentsFallback;
+    window.fetchMedia = window.fetchMedia || fetchMediaFallback;
+    window.fetchAboutData = window.fetchAboutData || fetchAboutDataFallback;
 
 })();
