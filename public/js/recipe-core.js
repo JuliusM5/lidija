@@ -166,7 +166,14 @@
                     // Successfully found recipe data, display it
                     displayRecipe(recipePage, recipe);
                 } else {
-                    throw new Error('Receptas nerastas');
+                    // If we created sample recipes, use them as fallback
+                    const sampleRecipe = getSampleRecipe(recipeId);
+                    if (sampleRecipe) {
+                        console.log('Using sample recipe data for demonstration');
+                        displayRecipe(recipePage, sampleRecipe);
+                    } else {
+                        throw new Error('Receptas nerastas');
+                    }
                 }
             })
             .catch(error => {
@@ -202,15 +209,26 @@
         // Define endpoints to try in order
         const endpoints = [
             `/api/recipes/${recipeId}`,
-            `/api/recipe/${recipeId}`,
-            `/admin-api/recipes/${recipeId}`,
-            `/recipes/${recipeId}.json`
+            `/api/recipe/${recipeId}`
         ];
         
         // Add endpoint for UUID only if different from recipeId
         const uuidFormat = formatRecipeId(recipeId);
         if (uuidFormat !== recipeId) {
             endpoints.unshift(`/api/recipes/${uuidFormat}`);
+        }
+        
+        // Check if we're in development mode
+        const isDev = window.location.hostname === 'localhost' || 
+                     window.location.hostname === '127.0.0.1';
+                     
+        // In development mode, we'll try testing endpoints
+        if (isDev) {
+            endpoints.push(`/admin-api/recipes/${recipeId}`);
+            
+            // Only try this if we're in development mode
+            // This endpoint often 404s and creates console errors
+            // endpoints.push(`/recipes/${recipeId}.json`);
         }
         
         // Try with token if available
@@ -261,54 +279,136 @@
             console.warn('Error checking local storage:', e);
         }
         
-        // As a last resort, try to generate fallback recipe data
-        return createFallbackRecipe(recipeId);
+        // If we couldn't find the recipe from any source, return null
+        return null;
     }
     
     /**
-     * Create fallback recipe data for demonstration purposes
+     * Get a sample recipe for demonstration purposes
+     * This is only used when in development mode and no real recipes exist
      */
-    function createFallbackRecipe(recipeId) {
-        console.log('Creating fallback recipe for demonstration purposes');
-        
+    function getSampleRecipe(recipeId) {
         // Check if we're in a development environment
         const isDev = window.location.hostname === 'localhost' || 
                      window.location.hostname === '127.0.0.1';
-        
-        // Only use fallback in development environment
+                     
+        // Only provide sample recipes in development mode
         if (!isDev) {
             return null;
         }
         
-        // Generate sample data
-        return {
-            id: recipeId,
-            title: "Demonstracinis receptas",
-            intro: "Šis demonstracinis receptas sukurtas automatiškai, nes serveris negalėjo rasti recepto duomenų. Tai padeda parodyti, kaip puslapis atrodytų su tikru receptu.",
-            image: null,
-            prep_time: "15",
-            cook_time: "30",
-            servings: "4",
-            ingredients: [
-                "400 g miltų",
-                "2 kiaušiniai",
-                "200 ml pieno",
-                "50 g sviesto",
-                "Žiupsnelis druskos",
-                "2 šaukštai cukraus"
-            ],
-            steps: [
-                "Dubenyje sumaišykite visus sausus ingredientus.",
-                "Įmuškite kiaušinius ir pamažu supilkite pieną, nuolat maišydami.",
-                "Ištirpinkite sviestą ir supilkite į tešlą.",
-                "Palikite tešlą pastovėti 30 minučių.",
-                "Kepkite vidutinio karštumo keptuvėje, kol gražiai apskrus."
-            ],
-            notes: "Šis receptas yra sugeneruotas automatiškai, nes tikrasis receptas (ID: " + recipeId + ") nebuvo rastas serverio duomenų bazėje.",
-            categories: ["Demonstracija"],
-            tags: ["demo", "pavyzdys", "automatinis"],
-            created_at: new Date().toISOString()
-        };
+        // Create some sample recipes
+        const sampleRecipes = [
+            {
+                id: "sample-recipe-1",
+                title: "Bulvių košė su grietine",
+                intro: "Tradicinis lietuviškas patiekalas, kuris puikiai tinka prie mėsos ar žuvies patiekalų. Švelnaus skonio ir kreminės tekstūros bulvių košė su grietine.",
+                image: null,
+                prep_time: "10",
+                cook_time: "25",
+                servings: "4",
+                ingredients: [
+                    "1 kg bulvių",
+                    "100 ml pieno",
+                    "50 g sviesto",
+                    "2 šaukštai grietinės",
+                    "Druskos pagal skonį",
+                    "Žiupsnelis maltų juodųjų pipirų"
+                ],
+                steps: [
+                    "Nulupkite bulves ir supjaustykite jas vidutinio dydžio kubeliais.",
+                    "Sudėkite bulves į puodą, užpilkite šaltu vandeniu, įberkite truputį druskos ir virkite apie 20 minučių, kol bulvės suminkštės.",
+                    "Nupilkite vandenį ir sugrūskite bulves.",
+                    "Kaitinkite pieną atskirame puodelyje, kol jis bus šiltas, bet ne verdantis.",
+                    "Į bulves įdėkite sviestą, supilkite šiltą pieną ir gerai išmaišykite.",
+                    "Įmaišykite grietinę, pagardinkite druska ir pipirais.",
+                    "Patiekite karštą, papuoštą šviežiomis žalumynais."
+                ],
+                notes: "Galite pagardinti bulvių košę smulkintais svogūnlaiškiais arba krapais. Jei norite tirštos košės, pilkite mažiau pieno.",
+                categories: ["Daržovės", "Bulvės", "Iš močiutės virtuvės"],
+                tags: ["bulvės", "košė", "pagrindinis", "garnyras"],
+                created_at: new Date().toISOString()
+            },
+            {
+                id: "sample-recipe-2",
+                title: "Šaltibarščiai",
+                intro: "Gaivus, vasariškas burokėlių sriubos patiekalas, kuris yra vienas populiariausių lietuviškos virtuvės patiekalų karštomis vasaros dienomis.",
+                image: null,
+                prep_time: "20",
+                cook_time: "0",
+                servings: "4",
+                ingredients: [
+                    "500 g virtų burokėlių",
+                    "1 l kefyro",
+                    "1 agurkas",
+                    "3 kiaušiniai",
+                    "100 g svogūnlaiškių",
+                    "100 g krapų",
+                    "Druskos pagal skonį"
+                ],
+                steps: [
+                    "Išvirkite kiaušinius (apie 8-10 min), atvėsinkite ir nulupkite.",
+                    "Burokėlius sutarkuokite burokine tarka.",
+                    "Agurką sutarkuokite ar supjaustykite mažais kubeliais.",
+                    "Smulkiai supjaustykite svogūnlaiškius ir krapus.",
+                    "Dubenyje sumaišykite burokėlius, agurkus, žalumynus.",
+                    "Supilkite kefyrą, įberkite druskos, gerai išmaišykite.",
+                    "Prieš patiekimą palaikykite šaldytuve bent 30 minučių.",
+                    "Patiekite su virtais kiaušiniais ir karštomis bulvėmis."
+                ],
+                notes: "Galite pagardinti šaltibarščius grietine. Jei mėgstate rūgštesnį skonį, įspauskite šiek tiek citrinos sulčių.",
+                categories: ["Sriubos", "Gamta lėkštėje", "Iš močiutės virtuvės"],
+                tags: ["šalta sriuba", "burokėliai", "vasara", "gaiva"],
+                created_at: new Date().toISOString()
+            },
+            {
+                id: "sample-recipe-3",
+                title: "Varškėčiai su uogiene",
+                intro: "Purus ir minkšti varškėčiai – tradicinis lietuviškas patiekalas, kurį galima patiekti tiek pusryčiams, tiek desertui.",
+                image: null,
+                prep_time: "15",
+                cook_time: "15",
+                servings: "4",
+                ingredients: [
+                    "500 g varškės",
+                    "2 kiaušiniai",
+                    "3-4 šaukštai miltų",
+                    "2 šaukštai cukraus",
+                    "Žiupsnelis druskos",
+                    "Šaukštelis vanilinio cukraus",
+                    "Aliejaus kepimui",
+                    "Grietinės patiekimui",
+                    "Uogienės patiekimui"
+                ],
+                steps: [
+                    "Varškę pertrinkite per sietelį arba sutrinkite šakute.",
+                    "Įmuškite kiaušinius, įberkite cukrų, vanilinį cukrų, druską ir gerai išmaišykite.",
+                    "Pamažu įmaišykite miltus, kol gausite lipnią, bet formuojamą tešlą.",
+                    "Jei tešla per skysta, įdėkite dar šiek tiek miltų.",
+                    "Šlapiomis rankomis formuokite nedidelius paplotėlius.",
+                    "Keptuvėje įkaitinkite aliejų ir kepkite varškėčius iš abiejų pusių, kol gražiai paruduos.",
+                    "Patiekite su grietine ir uogiene."
+                ],
+                notes: "Galite į tešlą įmaišyti razinų arba patiekti su šviežiomis uogomis.",
+                categories: ["Varškė", "Desertai", "Iš močiutės virtuvės"],
+                tags: ["varškė", "desertas", "pusryčiai", "saldumynai"],
+                created_at: new Date().toISOString()
+            }
+        ];
+        
+        // If recipeId matches one of our samples, return it
+        const matchingSample = sampleRecipes.find(r => r.id === recipeId);
+        if (matchingSample) {
+            return matchingSample;
+        }
+        
+        // If there's no match but recipeId contains "sample", return the first one
+        if (recipeId.includes("sample")) {
+            return sampleRecipes[0];
+        }
+        
+        // Otherwise, return null
+        return null;
     }
     
     /**
@@ -351,6 +451,7 @@
                             <li>Recepto ID gali būti neteisingas</li>
                             <li>Gali būti laikina serverio klaida</li>
                         </ul>
+                        <p style="margin-top: 20px;">Bandykite apžiūrėti recepto sąrašą pagrindiniame puslapyje.</p>
                         <button onclick="showPage('home-page')" style="padding: 10px 20px; background-color: #7f4937; color: white; border: none; cursor: pointer; margin-top: 20px; border-radius: 4px;">Grįžti į pagrindinį puslapį</button>
                     </div>
                 </div>
@@ -403,8 +504,13 @@
             <div class="recipe-content">
                 <div class="recipe-image">
                     ${recipe.image ? 
-                        `<img src="/img/recipes/${recipe.image}" alt="${recipe.title}" onerror="this.onerror=null; this.src='/img/placeholders/recipe-placeholder.jpg';">` : 
-                        '<div class="placeholder-image" style="background-color: #f8f5f1; height: 400px; display: flex; align-items: center; justify-content: center; color: #7f4937; font-style: italic;">Nuotrauka nepateikta</div>'}
+                        `<img src="/img/recipes/${recipe.image}" alt="${recipe.title}" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'500\\' height=\\'300\\' viewBox=\\'0 0 500 300\\'><rect fill=\\'%23f8f5f1\\' width=\\'500\\' height=\\'300\\'/><text fill=\\'%237f4937\\' font-family=\\'sans-serif\\' font-size=\\'30\\' opacity=\\'0.5\\' x=\\'50%\\' y=\\'50%\\' text-anchor=\\'middle\\'>${recipe.title}</text></svg>';">` : 
+                        `<div class="placeholder-image" style="background-color: #f8f5f1; height: 400px; display: flex; align-items: center; justify-content: center; color: #7f4937; font-style: italic;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 18px;">Nuotrauka nepateikta</div>
+                                <div style="font-size: 14px; margin-top: 10px;">${recipe.title}</div>
+                            </div>
+                        </div>`}
                 </div>
                 
                 <div class="recipe-description">
