@@ -54,43 +54,8 @@
       mediaWidget.textContent = widgets.media.total || 0;
     }
     
-    // Add some placeholder data for tables
-    const recipesTable = document.querySelector('#page-dashboard .admin-section:nth-child(2) tbody');
-    const commentsTable = document.querySelector('#page-dashboard .admin-section:nth-child(3) tbody');
+    /
     
-    if (recipesTable) {
-      recipesTable.innerHTML = `
-        <tr>
-          <td>Šaltibarščiai: vasaros skonis dubenyje</td>
-          <td>Sriubos, Vasaros patiekalai</td>
-          <td>2025-05-03 14:32:15</td>
-          <td>
-            <div class="action-buttons">
-              <button type="button" class="action-btn edit-btn" onclick="editRecipe('recipe-123')"><i class="fas fa-edit"></i></button>
-              <button type="button" class="action-btn delete-btn" onclick="showDeleteConfirmation('recipe-123', 'recipe')"><i class="fas fa-trash"></i></button>
-            </div>
-          </td>
-        </tr>
-      `;
-    }
-    
-    if (commentsTable) {
-      commentsTable.innerHTML = `
-        <tr>
-          <td>Laura</td>
-          <td>Mano močiutė visada dėdavo truputį krienų į šaltibarščius...</td>
-          <td>Šaltibarščiai: vasaros skonis dubenyje</td>
-          <td>2025-05-03 16:42:10</td>
-          <td>
-            <div class="action-buttons">
-              <button type="button" class="action-btn view-btn" onclick="viewComment('comment-123')"><i class="fas fa-eye"></i></button>
-              <button type="button" class="action-btn delete-btn" onclick="showDeleteConfirmation('comment-123', 'comment')"><i class="fas fa-trash"></i></button>
-            </div>
-          </td>
-        </tr>
-      `;
-    }
-  };
   
   // Recipe functions
   window.editRecipe = function(recipeId) {
@@ -237,32 +202,7 @@
     // Show comment modal
     const modal = document.getElementById('comment-modal');
     if (modal) {
-      // Populate with placeholder data
-      const commentView = document.getElementById('comment-view');
-      if (commentView) {
-        commentView.innerHTML = `
-          <div class="comment-details">
-            <p><strong>Author:</strong> Laura</p>
-            <p><strong>Email:</strong> laura@example.com</p>
-            <p><strong>Recipe:</strong> Šaltibarščiai: vasaros skonis dubenyje</p>
-            <p><strong>Date:</strong> 2025-05-03 16:42:10</p>
-            <p><strong>Status:</strong> Approved</p>
-          </div>
-          <div class="comment-content">
-            <h4>Comment:</h4>
-            <p>Mano močiutė visada dėdavo truputį krienų į šaltibarščius. Tai suteikia ypatingą aštrumą!</p>
-          </div>
-          <div class="comment-actions">
-            <button type="button" class="submit-button" onclick="editComment('${commentId}')">Edit</button>
-            <button type="button" class="cancel-button" onclick="changeCommentStatus('${commentId}', 'pending')">
-              Mark as Pending
-            </button>
-            <button type="button" class="cancel-button" onclick="changeCommentStatus('${commentId}', 'spam')" style="background-color: #cf5151;">
-              Mark as Spam
-            </button>
-          </div>
-        `;
-      }
+     
       
       // Show modal
       modal.classList.add('show');
@@ -292,12 +232,6 @@
     commentEdit.style.display = 'block';
     saveBtn.style.display = 'block';
     modalTitle.textContent = 'Edit Comment';
-    
-    // Populate with placeholder data
-    document.getElementById('edit-comment-author').value = 'Laura';
-    document.getElementById('edit-comment-email').value = 'laura@example.com';
-    document.getElementById('edit-comment-content').value = 'Mano močiutė visada dėdavo truputį krienų į šaltibarščius. Tai suteikia ypatingą aštrumą!';
-    document.getElementById('edit-comment-status').value = 'approved';
     
     // Set current item
     setCurrentItem(commentId, 'comment');
@@ -1035,4 +969,4 @@
       }
     }
   });
-})();
+});

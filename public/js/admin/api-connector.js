@@ -91,49 +91,7 @@ window.loadFallbackDashboardData = function() {
     media: { total: 0 }
   });
   
-  // Add fallback recipes
-  const updateRecentRecipes = window.updateRecentRecipes || function() {};
-  updateRecentRecipes([
-    {
-      id: 'fallback-1',
-      title: 'Šaltibarščiai: vasaros skonis dubenyje',
-      categories: ['Sriubos', 'Vasaros patiekalai'],
-      created_at: '2025-05-03 14:32:15'
-    },
-    {
-      id: 'fallback-2',
-      title: 'Kugelis (bulvių plokštainis)',
-      categories: ['Bulvės', 'Iš močiutės virtuvės'],
-      created_at: '2025-03-15 10:45:22'
-    },
-    {
-      id: 'fallback-3',
-      title: 'Tinginys: desertas užimtoms dienoms',
-      categories: ['Desertai'],
-      created_at: '2025-02-10 16:12:45'
-    }
-  ]);
   
-  // Add fallback comments
-  const updateRecentComments = window.updateRecentComments || function() {};
-  updateRecentComments([
-    {
-      id: 'comment-1',
-      author: 'Laura',
-      content: 'Mano močiutė visada dėdavo truputį krienų į šaltibarščius. Tai suteikia ypatingą aštrumą!',
-      recipe_title: 'Šaltibarščiai: vasaros skonis dubenyje',
-      created_at: '2025-05-03 16:42:10'
-    },
-    {
-      id: 'comment-2',
-      author: 'Tomas',
-      content: 'Kefyrą galima pakeisti graikišku jogurtu?',
-      recipe_title: 'Šaltibarščiai: vasaros skonis dubenyje',
-      created_at: '2025-05-04 09:15:33'
-    }
-  ]);
-};
-
 // Export functions to make them accessible globally
 window.updateDashboardWidgets = function(data) {
   // Update recipe count
