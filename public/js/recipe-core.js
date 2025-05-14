@@ -1,18 +1,57 @@
-// Recipe Data Connector - Focused on connecting to your actual recipe database
-// This script prioritizes finding and displaying your real recipes
+/**
+ * Recipe Core - Unified Recipe Handler
+ * 
+ * A comprehensive solution for recipe page handling that combines functionality from:
+ * - recipe-api-fix.js
+ * - recipe-data-connector.js
+ * - recipe-id-fix.js
+ * - recipe-page-handler.js
+ * - recipe-view-fix.js
+ * - uuid-suffix-fix.js
+ * 
+ * Features:
+ * - UUID format fixing (handles IDs with suffixes)
+ * - Multiple API endpoint handling
+ * - Recipe page creation and display
+ * - Error handling and fallbacks
+ * - Navigation handling
+ */
 
 (function() {
-    console.log('Recipe Data Connector loaded - Focusing on real recipe data');
+    console.log('Recipe Core loaded - Unified recipe handling solution');
 
-    // Store original functions for reference
+    // Store original functions for reference/fallback
     const originalShowPage = window.showPage;
     const originalLoadRecipePage = window.loadRecipePage;
     
-    // Enhanced showPage function that ensures recipe page exists
+    /**
+     * Format recipe ID to standard UUID format
+     * Handles IDs like "4cbcfd2a-324e-479c-a034-292322134796-suffix" 
+     * and extracts just the UUID part
+     */
+    function formatRecipeId(id) {
+        if (!id) return id;
+        
+        // If it looks like a UUID with extra components (more than 5 dashes)
+        if (id && id.includes('-')) {
+            const parts = id.split('-');
+            if (parts.length > 5) {
+                const formattedId = parts.slice(0, 5).join('-');
+                console.log('Formatted recipe ID:', id, '→', formattedId);
+                return formattedId;
+            }
+        }
+        return id;
+    }
+    
+    /**
+     * Enhanced showPage function that creates recipe page if needed
+     * and handles loading recipes
+     */
     window.showPage = function(pageId, extraData) {
         console.log(`Showing page: ${pageId}`, extraData ? `with data: ${extraData}` : '');
         
-        // If showing recipe page, ensure it exists
+        // If showing recipe page, make sure it exists
         if (pageId === 'recipe-page') {
             const recipePage = document.getElementById('recipe-page');
             if (!recipePage) {
@@ -40,23 +79,25 @@
             }
         }
         
-        // Load recipe if provided
-        if (pageId === 'recipe-page' && extraData && typeof window.loadRecipePage === 'function') {
+        // If showing recipe page with provided ID, load the recipe
+        if (pageId === 'recipe-page' && extraData) {
             window.loadRecipePage(extraData);
         }
     };
     
-    // Create recipe page if needed
+    /**
+     * Create recipe page element if it doesn't exist
+     */
     function createRecipePage() {
         if (document.getElementById('recipe-page')) {
             return; // Already exists
         }
         
-        // Create page element
         const recipePage = document.createElement('div');
         recipePage.id = 'recipe-page';
         recipePage.className = 'page';
         
+        // Initialize with loading indicator
         recipePage.innerHTML = `
             <div style="text-align: center; padding: 100px 20px;">
                 <h2>Kraunamas receptas...</h2>
@@ -82,7 +123,9 @@
         return recipePage;
     }
     
-    // Enhanced recipe loading function focused on real data
+    /**
+     * Enhanced recipe loading function
+     */
     window.loadRecipePage = function(recipeId) {
         console.log('Loading recipe with ID:', recipeId);
         
@@ -116,14 +159,14 @@
         // Show loading indicator
         showRecipeLoading(recipePage);
         
-        // Focus on finding the actual recipe data
-        loadRealRecipeData(recipeId)
+        // Try multiple endpoints to fetch the recipe
+        tryMultipleEndpoints(recipeId)
             .then(recipe => {
                 if (recipe) {
                     // Successfully found recipe data, display it
                     displayRecipe(recipePage, recipe);
                 } else {
-                    throw new Error('Receptas nerastas. Patikrinkite ID.');
+                    throw new Error('Receptas nerastas');
                 }
             })
             .catch(error => {
@@ -132,97 +175,9 @@
             });
     };
     
-    // Format recipe ID to standard format
-    function formatRecipeId(id) {
-        // Handle UUIDs with suffix
-        if (id && id.includes('-')) {
-            // Check if ID has more parts than a standard UUID
-            const parts = id.split('-');
-            if (parts.length > 5) {
-                // Extract just the UUID part (first 5 segments)
-                return parts.slice(0, 5).join('-');
-            }
-        }
-        return id;
-    }
-    
-    // Function specifically focused on loading real recipe data
-    async function loadRealRecipeData(recipeId) {
-        // Define API endpoints to try, prioritizing your main endpoint
-        const endpoints = [
-            `/api/recipes/${recipeId}`,         // Main public API endpoint
-            `/recipes/${recipeId}`,             // Alternative public endpoint
-            `/admin-api/recipes/${recipeId}`    // Admin API endpoint (if authorized)
-        ];
-        
-        // Add endpoint for the UUID part only (if ID has suffix)
-        if (recipeId.includes('-')) {
-            const uuidPart = recipeId.split('-').slice(0, 5).join('-');
-            if (uuidPart !== recipeId) {
-                // Try the clean UUID version first
-                endpoints.unshift(`/api/recipes/${uuidPart}`);
-            }
-        }
-        
-        // Add authentication token if available
-        const token = localStorage.getItem('token');
-        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-        
-        console.log('Attempting to load recipe using endpoints:', endpoints);
-        
-        // Try each endpoint in sequence
-        for (const endpoint of endpoints) {
-            try {
-                console.log(`Trying to fetch recipe from: ${endpoint}`);
-                
-                const response = await fetch(endpoint, { headers });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    // Check for valid recipe data
-                    if (data.success && data.data) {
-                        console.log('Successfully loaded recipe from:', endpoint);
-                        return data.data;
-                    } else if (data.title) {
-                        // Direct recipe data
-                        console.log('Found recipe data directly from:', endpoint);
-                        return data;
-                    } else {
-                        console.log('Response from endpoint did not contain valid recipe data:', data);
-                    }
-                } else {
-                    console.warn(`Endpoint ${endpoint} returned status ${response.status}`);
-                }
-            } catch (error) {
-                console.warn(`Error fetching from ${endpoint}:`, error.message);
-            }
-        }
-        
-        // If we still couldn't find the recipe, try local storage as last resort
-        console.log('Attempting to find recipe in local storage');
-        try {
-            // Check if we have recipes in localStorage (admin panel might store them)
-            const localRecipes = localStorage.getItem('recipes');
-            if (localRecipes) {
-                const recipes = JSON.parse(localRecipes);
-                const recipe = recipes.find(r => r.id === recipeId || 
-                                                r.id === recipeId.split('-').slice(0, 5).join('-'));
-                if (recipe) {
-                    console.log('Found recipe in local storage:', recipe);
-                    return recipe;
-                }
-            }
-        } catch (e) {
-            console.warn('Error checking local storage:', e);
-        }
-        
-        // If all attempts failed, return null (no recipe found)
-        console.error('Failed to find recipe data for ID:', recipeId);
-        return null;
-    }
-    
-    // Show loading indicator
+    /**
+     * Show loading indicator
+     */
     function showRecipeLoading(container) {
         container.innerHTML = `
             <div style="display: flex; justify-content: center; align-items: center; min-height: 400px; width: 100%;">
@@ -240,18 +195,133 @@
         `;
     }
     
-    // Show error message
-    function showRecipeError(errorMessage, container) {
-        // Ensure we have a container
-        if (!container) {
-            container = document.getElementById('recipe-page');
-            if (!container) {
-                console.error('Recipe page container not found');
-                return;
+    /**
+     * Try multiple API endpoints to find the recipe
+     */
+    async function tryMultipleEndpoints(recipeId) {
+        // Define endpoints to try in order
+        const endpoints = [
+            `/api/recipes/${recipeId}`,
+            `/api/recipe/${recipeId}`,
+            `/admin-api/recipes/${recipeId}`,
+            `/recipes/${recipeId}.json`
+        ];
+        
+        // Add endpoint for UUID only if different from recipeId
+        const uuidFormat = formatRecipeId(recipeId);
+        if (uuidFormat !== recipeId) {
+            endpoints.unshift(`/api/recipes/${uuidFormat}`);
+        }
+        
+        // Try with token if available
+        const token = localStorage.getItem('token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        
+        // Try each endpoint until we get a successful response
+        for (const endpoint of endpoints) {
+            try {
+                console.log(`Attempting to fetch recipe from: ${endpoint}`);
+                
+                const response = await fetch(endpoint, { headers });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Check if we have valid recipe data
+                    if (data.success && data.data) {
+                        console.log('Successfully loaded recipe from:', endpoint);
+                        return data.data;
+                    } else if (data.title) {
+                        // Direct JSON response without wrapper
+                        console.log('Successfully loaded recipe directly from:', endpoint);
+                        return data;
+                    }
+                } else {
+                    console.warn(`Endpoint ${endpoint} returned status ${response.status}`);
+                }
+            } catch (error) {
+                console.warn(`Failed to fetch from ${endpoint}:`, error.message);
+                // Continue to next endpoint
             }
         }
         
-        // Try to get layout elements from home page
+        // Try localStorage as last resort (admin panel might store recipes there)
+        try {
+            const localRecipes = localStorage.getItem('recipes');
+            if (localRecipes) {
+                const recipes = JSON.parse(localRecipes);
+                const recipe = recipes.find(r => r.id === recipeId || 
+                                                r.id === formatRecipeId(recipeId));
+                if (recipe) {
+                    console.log('Found recipe in local storage:', recipe);
+                    return recipe;
+                }
+            }
+        } catch (e) {
+            console.warn('Error checking local storage:', e);
+        }
+        
+        // As a last resort, try to generate fallback recipe data
+        return createFallbackRecipe(recipeId);
+    }
+    
+    /**
+     * Create fallback recipe data for demonstration purposes
+     */
+    function createFallbackRecipe(recipeId) {
+        console.log('Creating fallback recipe for demonstration purposes');
+        
+        // Check if we're in a development environment
+        const isDev = window.location.hostname === 'localhost' || 
+                     window.location.hostname === '127.0.0.1';
+        
+        // Only use fallback in development environment
+        if (!isDev) {
+            return null;
+        }
+        
+        // Generate sample data
+        return {
+            id: recipeId,
+            title: "Demonstracinis receptas",
+            intro: "Šis demonstracinis receptas sukurtas automatiškai, nes serveris negalėjo rasti recepto duomenų. Tai padeda parodyti, kaip puslapis atrodytų su tikru receptu.",
+            image: null,
+            prep_time: "15",
+            cook_time: "30",
+            servings: "4",
+            ingredients: [
+                "400 g miltų",
+                "2 kiaušiniai",
+                "200 ml pieno",
+                "50 g sviesto",
+                "Žiupsnelis druskos",
+                "2 šaukštai cukraus"
+            ],
+            steps: [
+                "Dubenyje sumaišykite visus sausus ingredientus.",
+                "Įmuškite kiaušinius ir pamažu supilkite pieną, nuolat maišydami.",
+                "Ištirpinkite sviestą ir supilkite į tešlą.",
+                "Palikite tešlą pastovėti 30 minučių.",
+                "Kepkite vidutinio karštumo keptuvėje, kol gražiai apskrus."
+            ],
+            notes: "Šis receptas yra sugeneruotas automatiškai, nes tikrasis receptas (ID: " + recipeId + ") nebuvo rastas serverio duomenų bazėje.",
+            categories: ["Demonstracija"],
+            tags: ["demo", "pavyzdys", "automatinis"],
+            created_at: new Date().toISOString()
+        };
+    }
+    
+    /**
+     * Show error message when recipe cannot be loaded
+     */
+    function showRecipeError(errorMessage, container) {
+        // If container not provided, try to find it
+        if (!container) {
+            container = document.getElementById('recipe-page');
+            if (!container) return;
+        }
+        
+        // Try to get header and footer from home page
         const homePage = document.getElementById('home-page');
         let headerHtml = '';
         let footerHtml = '';
@@ -267,7 +337,7 @@
             if (sidebar) sidebarHtml = sidebar.outerHTML;
         }
         
-        // Create error message with layout
+        // Display error message
         container.innerHTML = `
             ${headerHtml}
             <div class="container main-content">
@@ -289,11 +359,13 @@
             ${footerHtml}
         `;
         
-        // Set up navigation
+        // Setup navigation handlers
         setupNavigationHandlers(container);
     }
     
-    // Display recipe
+    /**
+     * Display recipe content
+     */
     function displayRecipe(container, recipe) {
         // Get layout elements from home page
         const homePage = document.getElementById('home-page');
@@ -331,7 +403,7 @@
             <div class="recipe-content">
                 <div class="recipe-image">
                     ${recipe.image ? 
-                        `<img src="/img/recipes/${recipe.image}" alt="${recipe.title}" onerror="this.onerror=null; this.src='img/placeholders/recipe-placeholder.jpg';">` : 
+                        `<img src="/img/recipes/${recipe.image}" alt="${recipe.title}" onerror="this.onerror=null; this.src='/img/placeholders/recipe-placeholder.jpg';">` : 
                         '<div class="placeholder-image" style="background-color: #f8f5f1; height: 400px; display: flex; align-items: center; justify-content: center; color: #7f4937; font-style: italic;">Nuotrauka nepateikta</div>'}
                 </div>
                 
@@ -441,7 +513,9 @@
         setupRecipePage(container);
     }
     
-    // Setup recipe page event handlers
+    /**
+     * Setup recipe page event handlers
+     */
     function setupRecipePage(container) {
         // Setup dropdown menus
         setupDropdowns(container);
@@ -473,7 +547,9 @@
         }
     }
     
-    // Setup dropdown menus
+    /**
+     * Setup dropdown menus
+     */
     function setupDropdowns(container) {
         const dropdowns = container.querySelectorAll('.dropdown');
         
@@ -530,7 +606,9 @@
         });
     }
     
-    // Setup navigation handlers
+    /**
+     * Setup navigation handlers
+     */
     function setupNavigationHandlers(container) {
         const navLinks = container.querySelectorAll('nav a, .dropdown-content a');
         
@@ -566,32 +644,9 @@
         });
     }
     
-    // Format date helper
-    function formatDate(dateString) {
-        if (!dateString) return '';
-        
-        try {
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) return '';
-            
-            return date.toLocaleDateString('lt-LT', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-        } catch (error) {
-            console.warn('Error formatting date:', error);
-            return '';
-        }
-    }
-    
-    // Email validation helper
-    function isValidEmail(email) {
-        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        return re.test(String(email).toLowerCase());
-    }
-    
-    // Fix recipe link handling
+    /**
+     * Fix recipe link handling
+     */
     function fixRecipeLinks() {
         document.addEventListener('click', function(e) {
             // Find if this is a recipe link
@@ -629,7 +684,38 @@
         });
     }
     
-    // Add debugging function to find and display all recipes
+    /**
+     * Format date helper
+     */
+    function formatDate(dateString) {
+        if (!dateString) return '';
+        
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return '';
+            
+            return date.toLocaleDateString('lt-LT', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        } catch (error) {
+            console.warn('Error formatting date:', error);
+            return '';
+        }
+    }
+    
+    /**
+     * Email validation helper
+     */
+    function isValidEmail(email) {
+        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
+    }
+    
+    /**
+     * Debugging function to list all recipes
+     */
     window.debugListAllRecipes = function() {
         console.log('Attempting to list all available recipes');
         
@@ -651,9 +737,11 @@
             });
     };
     
-    // Initialize when DOM is loaded
+    /**
+     * Initialize when DOM is loaded
+     */
     document.addEventListener('DOMContentLoaded', function() {
-        // Ensure recipe page exists
+        // Create recipe page if needed
         createRecipePage();
         
         // Fix recipe links
@@ -668,7 +756,7 @@
             showPage('recipe-page', recipeId);
         }
         
-        console.log('Recipe Data Connector initialized successfully');
+        console.log('Recipe Core initialized successfully');
         console.log('Use debugListAllRecipes() to see all available recipes');
     });
 })();
